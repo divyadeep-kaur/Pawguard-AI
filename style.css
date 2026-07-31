@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* --- CUSTOM UTILITY & UTILS --- */
+html, body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
+}
+
+.font-display {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Custom Scrollbar Styles */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.4);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.6);
+}
+
+/* Animations declarations */
+@keyframes kenburns {
+  0% { transform: scale(1.0); }
+  100% { transform: scale(1.06); }
+}
+
+.kenburns-active {
+  animation: kenburns 6000ms ease-out forwards;
+}
+
+@keyframes laserBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(350px); }
+}
+
+.laser-active {
+  animation: laserBounce 2s infinite ease-in-out;
+}
+
+@keyframes scanner-beam {
+  0% { top: 0%; }
+  50% { top: 100%; }
+  100% { top: 0%; }
+}
+
+.animate-scanner-beam {
+  animation: scanner-beam 2.5s infinite linear;
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.45; }
+}
+
+.blur-glow {
+  animation: glowPulse 4s infinite ease-in-out;
+}
+
+/* Transition Utility */
+.transition-opacity-all {
+  transition: opacity 1000ms ease-in-out, transform 1000ms ease-out;
+}
+
+/* Line Clamp custom override for pure css */
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+
+/* Leaflet Layout fix */
+#leaflet-map {
+  z-index: 10;
+}
+.leaflet-container {
+  font-family: 'Inter', sans-serif;
+}
+.leaflet-popup-content-value {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Custom Map Icon styles */
+.custom-map-marker {
+  background: transparent !important;
+  border: none !important;
+}

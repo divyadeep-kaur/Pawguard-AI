@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "RescueReport": {
+      "title": "Rescue Report",
+      "description": "Rescue report ticket representing a stray animal in distress.",
+      "type": "object",
+      "properties": {
+        "ticketNumber": { "type": "string", "description": "Unique identifier for this rescue ticket, e.g. PWG-2026-001" },
+        "animalType": { "type": "string", "description": "The type of animal in distress, e.g. Dog, Cat, Cow" },
+        "breed": { "type": "string", "description": "The detected or presumed breed or mix" },
+        "healthStatus": { "type": "string", "description": "Limb condition, injury, mange status or other symptoms" },
+        "severity": { "type": "string", "enum": ["low", "moderate", "critical"], "description": "Initial medical risk level" },
+        "description": { "type": "string", "description": "Detailed notes on distress state and context" },
+        "location": { "type": "string", "description": "Physical location description, landmark or street" },
+        "gpsCoordinates": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          },
+          "required": ["lat", "lng"]
+        },
+        "imageUrl": { "type": "string", "description": "Image link of the animal in distress" },
+        "reporterName": { "type": "string", "description": "The name of the reporting civilian" },
+        "reporterContact": { "type": "string", "description": "Contact phone number of the reporter" },
+        "status": { "type": "string", "enum": ["Reported", "Dispatched", "In-Rescue", "Recovered"], "description": "Live status of rescue process" },
+        "timestamp": { "type": "string", "description": "ISO timestamp when the report was created" }
+      },
+      "required": ["ticketNumber", "animalType", "description", "location", "reporterName", "reporterContact", "status", "timestamp"]
+    },
+    "AdoptionRequest": {
+      "title": "Adoption Request",
+      "description": "Applicant questionnaire to adopt or foster a rescued pet.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique adoption ticket ID" },
+        "animalId": { "type": "string", "description": "The ID of the pet chosen for adoption" },
+        "animalName": { "type": "string", "description": "The name of the animal, e.g. Buddy, Luna" },
+        "applicantName": { "type": "string", "description": "The name of the adoptive applicant" },
+        "applicantEmail": { "type": "string", "description": "Email address of the applicant" },
+        "applicantPhone": { "type": "string", "description": "Phone number of the applicant" },
+        "visitDate": { "type": "string", "description": "Scheduled date for adoption shelter visit" },
+        "message": { "type": "string", "description": "Introduction or motivation from the applicant" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Contacted"], "description": "Verification status of the adoption application" }
+      },
+      "required": ["id", "animalId", "animalName", "applicantName", "applicantEmail", "applicantPhone", "visitDate", "status"]
+    }
+  },
+  "firestore": {
+    "/rescueReports/{ticketNumber}": {
+      "schema": "RescueReport",
+      "description": "Active stray animal distress logs tracked on dispatch coordinate maps."
+    },
+    "/adoptionRequests/{requestId}": {
+      "schema": "AdoptionRequest",
+      "description": "Adoption and foster applications from civilian visitors."
+    }
+  }
+}

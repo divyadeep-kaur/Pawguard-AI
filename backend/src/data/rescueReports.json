@@ -1,0 +1,62 @@
+[
+  {
+    "ticketNumber": "PWG-2026-001",
+    "animalType": "Dog",
+    "breed": "Indie Dog Mix",
+    "healthStatus": "Skin Scratches & Malnutrition",
+    "severity": "moderate",
+    "description": "Found shivering near Sector 12 metro station. Appears to have mild skin injury and requires nourishment.",
+    "location": "Metro Depot Gate 3, Sector 12",
+    "gpsCoordinates": { "lat": 28.5355, "lng": 77.391 },
+    "imageUrl": "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=600",
+    "reporterName": "Chetan Dhawan",
+    "reporterContact": "+91 98765 43210",
+    "status": "In-Rescue",
+    "timestamp": "2026-06-10T12:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-002",
+    "animalType": "Cow",
+    "breed": "Desi Breed",
+    "healthStatus": "Leg Fracture / Severe Wound",
+    "severity": "critical",
+    "description": "Hit-and-run victim on Expressway. Serious struggle standing up, heavy bleeding from left hind leg. Urgently need veterinary vehicle.",
+    "location": "Sukhdev Vihar Highway Crossing, New Delhi",
+    "gpsCoordinates": { "lat": 28.562, "lng": 77.273 },
+    "imageUrl": "https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=600",
+    "reporterName": "Divyadeep Kaur",
+    "reporterContact": "+91 88888 99999",
+    "status": "Dispatched",
+    "timestamp": "2026-06-10T14:30:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-003",
+    "animalType": "Cat",
+    "breed": "Domestic Shorthair",
+    "healthStatus": "Eye Allergy",
+    "severity": "low",
+    "description": "Chubby ginger kitty with red watery left eye roaming near central playground. Friendly but needs clean drops.",
+    "location": "Fountain Park block C",
+    "gpsCoordinates": { "lat": 28.5201, "lng": 77.3621 },
+    "imageUrl": "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=600",
+    "reporterName": "Ananya Sharma",
+    "reporterContact": "+91 99999 11111",
+    "status": "Recovered",
+    "timestamp": "2026-06-09T09:15:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-004",
+    "animalType": "Indie Dog",
+    "breed": "Indie",
+    "healthStatus": "Fully Healthy",
+    "severity": "low",
+    "description": "Playful indie puppy running around harmlessly. Super socialized, hope someone adopts this baby soon.",
+    "location": "Green Avenue Corner, Block A",
+    "gpsCoordinates": { "lat": 28.541, "lng": 77.412 },
+    "imageUrl": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=600",
+    "reporterName": "Chetan Dhawan",
+    "reporterContact": "+91 98765 43210",
+    "status": "Reported",
+    "timestamp": "2026-06-10T21:40:00Z"
+  }
+]

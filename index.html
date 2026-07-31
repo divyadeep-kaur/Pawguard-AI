@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PawGuard AI: Stray Animal Rescue System</title>
+  
+  <!-- Tailwind CSS Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google CSS Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Leaflet GIS Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- FontAwesome / Lucide Script -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- jsQR Code Utility for Field Portal Scanning -->
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-800 antialiased flex flex-col justify-between">
+
+  <!-- ================= ACTIVE NATIONAL EMERGENCY BANNER ================= -->
+  <div id="emergency-alert" class="bg-red-600 text-white py-3 px-4 z-50 sticky top-0 shadow-lg select-none transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <span class="flex h-3 w-3 relative shrink-0">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+        </span>
+        <p class="text-xs sm:text-sm font-display font-bold tracking-wide uppercase">
+          🚨 Active National Rescue Protocol: Dial Municipal Ambulance Station <a href="tel:1962" class="underline hover:text-red-100 font-extrabold font-mono text-white">1962</a> for immediate veterinarian deployment
+        </p>
+      </div>
+      <button onclick="document.getElementById('emergency-alert').remove()" class="text-white/80 hover:text-white hover:scale-105 transition cursor-pointer p-1">
+        <i data-lucide="x" class="w-4.5 h-4.5"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= NAVBAR PLATFORM NAVIGATION ================= -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-100 z-45 sticky top-[46px] transition-all">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Platform Logo -->
+        <a href="#home" class="flex items-center space-x-2.5 group">
+          <div class="w-10.5 h-10.5 rounded-2xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] flex items-center justify-center text-white text-lg shadow-md shadow-blue-500/10 group-hover:scale-105 transition">
+            🐾
+          </div>
+          <div>
+            <h1 class="font-display font-black text-lg tracking-tight text-slate-900 flex items-center gap-1.5">
+              PawGuard <span class="bg-[#2563EB] text-white text-[9px] font-mono font-bold uppercase py-0.5 px-2 rounded-full tracking-widest">AI Hub</span>
+            </h1>
+            <p class="text-[10px] font-mono font-semibold tracking-wider text-slate-400 uppercase">National Stray Diagnostics Map</p>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Routes -->
+        <nav class="hidden lg:flex items-center space-x-8">
+          <a href="#home" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">Home</a>
+          <a href="#scanner" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">AI Scanner</a>
+          <a href="#reporter" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">File Report</a>
+          <a href="#map-section" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">Rescue Map</a>
+          <a href="#dashboard" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">Analytics</a>
+          <a href="#adoption" class="text-sm font-semibold text-slate-600 hover:text-[#2563EB] transition navbar-link font-display">Adoption</a>
+          <a href="#field-portal-wrapper" onclick="window.state.triggerFieldPortalDefault()" class="text-sm font-semibold text-slate-605 text-orange-600 font-bold hover:text-[#2563EB] transition navbar-link font-display">Field Portal</a>
+        </nav>
+
+        <!-- Role Control Panel -->
+        <div class="flex items-center space-x-3">
+          <div class="relative inline-block text-left">
+            <select id="role-selector" onchange="window.state.onRoleChange(this.value)" class="bg-slate-50 border border-slate-200 text-slate-700 font-display font-bold text-xs rounded-xl py-2 px-3.5 outline-none hover:bg-slate-100/80 hover:border-slate-300 transition cursor-pointer select-none">
+              <option value="Citizen">🐾 Citizen Portal</option>
+              <option value="NGO">🏥 NGO Controller</option>
+              <option value="Govt">🏛️ Govt Admin</option>
+              <option value="System">⚙️ System Root</option>
+              <option value="Officer">🛡️ Field Officer Portal</option>
+            </select>
+          </div>
+
+          <!-- Mobile Nav Toggle button -->
+          <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="lg:hidden p-2 rounded-xl border border-slate-100 hover:bg-slate-50 text-slate-700 select-none cursor-pointer">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Drawer Menu Dropdown -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-slate-50 bg-white px-5 py-4 space-y-3 shadow-inner">
+      <a href="#home" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">Home</a>
+      <a href="#scanner" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">AI Scanner</a>
+      <a href="#reporter" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">File Report</a>
+      <a href="#map-section" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">Rescue Map</a>
+      <a href="#dashboard" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">Analytics</a>
+      <a href="#adoption" onclick="document.getElementById('mobile-menu').classList.add('hidden')" class="block py-2 text-sm font-bold text-slate-700 hover:text-[#2563EB]">Adoption</a>
+      <a href="#field-portal-wrapper" onclick="document.getElementById('mobile-menu').classList.add('hidden'); window.state.triggerFieldPortalDefault()" class="block py-2 text-sm font-bold text-orange-600 hover:text-[#2563EB]">Field Portal</a>
+    </div>
+  </header>
+
+  <!-- ================= AUTHORIZED FIELD OFFICER PORTAL GATE (QR Triggered) ================= -->
+  <section id="field-portal-wrapper" class="hidden max-w-5xl mx-auto px-4 mt-8">
+    <div class="bg-slate-900 rounded-3xl border-2 border-blue-600/80 shadow-2xl p-6 sm:p-8 text-white relative">
+      <div class="absolute top-4 right-4 flex space-x-2">
+        <button onclick="window.state.closeFieldPortal()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-[10px] rounded-lg tracking-widest uppercase cursor-pointer transition">
+          EXIT GATE
+        </button>
+      </div>
+      
+      <!-- Top banner status beacon -->
+      <div class="flex items-center gap-2 mb-4">
+        <span class="flex h-2.5 w-2.5 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+        </span>
+        <span class="text-[10px] font-mono text-orange-400 font-extrabold tracking-widest uppercase">
+          AUTHORIZED FIELD BEACON SYNC ACTIVE
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center" id="field-portal-content">
+        <!-- Dyn pop -->
+      </div>
+    </div>
+  </section>
+
+  <main class="flex-grow">
+
+    <!-- ================= HOME HERO CINEMATIC SLIDESHOW ================= -->
+    <section id="home" class="relative bg-slate-950 text-white min-h-[640px] flex items-center justify-center overflow-hidden">
+      <!-- Background Image Slide Frame -->
+      <div class="absolute inset-0 z-0">
+        <img id="hero-bg-img" src="" alt="Hero cinematic back" class="w-full h-full object-cover opacity-35 filter brightness-75 transition-all duration-1000 ease-in-out" />
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20"></div>
+      </div>
+
+      <!-- Hero Overlay Grid Content -->
+      <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full flex flex-col justify-between min-h-[600px]">
+        
+        <!-- Main Pitch HUD Details -->
+        <div class="max-w-3xl mt-12">
+          <!-- Live tag indicators -->
+          <div class="inline-flex items-center space-x-2 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15 backdrop-blur-md mb-6 hover:bg-white/15 transition">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[11px] font-mono tracking-wider font-extrabold uppercase" id="hero-tag"></span>
+          </div>
+
+          <h2 id="hero-title" class="font-display font-black text-4xl sm:text-6xl text-white leading-none tracking-tight transition-all duration-500">
+            <!-- Populated dyn -->
+          </h2>
+          <p id="hero-desc" class="text-md sm:text-lg text-slate-300 mt-6 font-light leading-relaxed max-w-2xl transition-all duration-500">
+            <!-- Populated dyn -->
+          </p>
+
+          <!-- Interactive Action anchor tags -->
+          <div class="flex flex-wrap gap-4 mt-8">
+            <a id="hero-btn" href="#scanner" class="px-8 py-4 bg-[#2563EB] hover:bg-blue-500 text-white font-bold text-sm uppercase tracking-wider rounded-2xl transition shadow-lg shadow-blue-500/25 active:scale-98">
+              <!-- Text -->
+            </a>
+            <a href="#reporter" class="px-8 py-4 border border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm text-white font-bold text-sm uppercase tracking-wider rounded-2xl transition">
+              Map Local Incident
+            </a>
+          </div>
+        </div>
+
+        <!-- Slider Progression controls -->
+        <div class="flex items-center justify-between mt-12 border-t border-white/10 pt-8">
+          <!-- Dots indicators -->
+          <div class="flex items-center space-x-3" id="hero-dots">
+            <!-- Dyn -->
+          </div>
+
+          <!-- Carousel Chevron controls -->
+          <div class="flex space-x-3">
+            <button onclick="window.state.prevHeroSlide()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center cursor-pointer hover:scale-105 transition active:scale-95 text-white">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <button onclick="window.state.nextHeroSlide()" class="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 flex items-center justify-center cursor-pointer hover:scale-105 transition active:scale-95 text-white">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= ACTION SHIELDS UNDER-GRID ================= -->
+    <div class="-mt-10 relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Shield 1 -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-blue-100/80 flex items-center justify-center text-[#2563EB] shrink-0">
+            👑
+          </div>
+          <div>
+            <h4 class="font-display font-bold text-slate-900 text-base">WWF India Partner Network</h4>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">Collaborating directly with recognized forest guards and national wildlife federations across municipal corridors.</p>
+          </div>
+        </div>
+
+        <!-- Shield 2 -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-orange-100/80 flex items-center justify-center text-orange-600 shrink-0">
+            🏥
+          </div>
+          <div>
+            <h4 class="font-display font-bold text-slate-900 text-base">Government Authorized Vets</h4>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">Fully synchronized with Helpline 1962. Free medicines, sterilization, and emergency ambulance dispatch.</p>
+          </div>
+        </div>
+
+        <!-- Shield 3 -->
+        <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex items-start space-x-4">
+          <div class="w-12 h-12 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-600 shrink-0">
+            🧬
+          </div>
+          <div>
+            <h4 class="font-display font-bold text-slate-900 text-base">Gemini Diagnosticians</h4>
+            <p class="text-xs text-slate-500 mt-1 leading-relaxed">AI analyzer helps volunteers quickly identify clinical symptoms and generate print QR tags for tracking on the go.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ================= GOVERNMENT HELPLINE BRIGADE ================= -->
+    <section class="py-20 bg-slate-50 border-b border-slate-200/60 mt-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-gradient-to-r from-[#031B33] to-[#0A2540] rounded-[36px] overflow-hidden shadow-2xl relative border border-white/5">
+          <div class="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(99,102,241,0.15),transparent)] pointer-events-none"></div>
+          
+          <div class="px-6 py-12 sm:p-16 flex flex-col lg:flex-row items-center justify-between gap-12 relative z-10 text-white">
+            <div class="max-w-2xl text-center lg:text-left">
+              <span class="text-[10px] font-mono font-bold tracking-widest text-[#2563EB] bg-blue-950/80 border border-blue-900 py-1.5 px-3.5 rounded-full uppercase block w-max mx-auto lg:mx-0 mb-4">
+                🇮🇳 Ministry of Animal Husbandry & Dairying
+              </span>
+              <h3 class="font-display font-black text-3xl sm:text-5xl text-white leading-tight">
+                National Animal Welfare Helpline Brigade
+              </h3>
+              <p class="text-slate-300 text-sm mt-4 font-light leading-relaxed">
+                Empowered by AWBI and national veterinary boards, raw distress reports trigger localized rescue protocols. Voluntary ambulances are fully equipped with wound packs, antibiotics, and water rations.
+              </p>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-8">
+                <div class="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center space-x-3">
+                  <span class="text-xl">🚑</span>
+                  <div>
+                    <h5 class="text-xs font-bold font-display text-white">1962 Ambulances</h5>
+                    <p class="text-[10px] text-slate-400">Available 24/7 in New Delhi</p>
+                  </div>
+                </div>
+                <div class="p-4 bg-white/5 rounded-2xl border border-white/10 flex items-center space-x-3">
+                  <span class="text-xl">🏥</span>
+                  <div>
+                    <h5 class="text-xs font-bold font-display text-white">Veterinary Shelters</h5>
+                    <p class="text-[10px] text-slate-400">Collaborated clinic network</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Big Call Button layout -->
+            <div class="shrink-0 flex flex-col items-center justify-center p-8 bg-blue-600 hover:bg-blue-500 rounded-[32px] text-center w-full lg:w-72 shadow-lg shadow-blue-500/10 cursor-pointer active:scale-95 transition-all" onclick="window.location.href='tel:1962'">
+              <div class="w-14 h-14 bg-white/15 rounded-full flex items-center justify-center text-white mb-4 animate-bounce">
+                <i data-lucide="phone-call" class="w-7 h-7"></i>
+              </div>
+              <span class="text-[10px] font-mono tracking-widest uppercase font-extrabold text-blue-100">DIAL TOLL FREE</span>
+              <div class="text-4xl font-display font-black text-white mt-1">1962</div>
+              <p class="text-[10px] font-mono tracking-wide text-blue-200 mt-2">Municipal Dispatch Dispatcher</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= STRAY DETECTOR AI SCANNER ================= -->
+    <section id="scanner" class="py-24 bg-white">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header Banner title -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            🔮 Intelligent Clinical Telemetry
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            AI Animal Diagnostic Scanner
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Snap distress photos of stray animals with your camera. Our Gemini Vision Engine will parse species taxonomy, diagnose injury severity levels, highlight contagion warnings, and suggest instant step-by-step veterinary first-aid.
+          </p>
+        </div>
+
+        <!-- Interactive Grid Scanner Setup -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-stretch">
+          
+          <!-- LEFT: Controls & Capture Frame (7 Columns) -->
+          <div class="lg:col-span-7 flex flex-col justify-between">
+            <div class="bg-slate-50 border border-slate-200 rounded-[32px] p-6 sm:p-8 flex flex-col justify-between h-full shadow-sm">
+              
+              <!-- Tabs layout: Upload vs Camera vs Presets -->
+              <div class="flex bg-slate-200/60 p-1.5 rounded-2xl border border-slate-200 max-w-md mb-6">
+                <button id="tab-btn-file" onclick="window.state.switchScanTab('file')" class="flex-1 py-2 text-center text-xs font-bold rounded-xl cursor-pointer transition bg-white text-slate-900 shadow-md">
+                  📁 File Upload
+                </button>
+                <button id="tab-btn-camera" onclick="window.state.switchScanTab('camera')" class="flex-1 py-1.5 text-center text-xs font-bold rounded-xl cursor-pointer transition text-slate-500 hover:text-slate-800">
+                  📷 Active Camera
+                </button>
+                <button id="tab-btn-presets" onclick="window.state.switchScanTab('presets')" class="flex-1 py-1.5 text-center text-xs font-bold rounded-xl cursor-pointer transition text-slate-500 hover:text-slate-800">
+                  🌟 Preset Samples
+                </button>
+              </div>
+
+              <!-- VIEWPORT FOR IMAGE RENDERING -->
+              <div class="relative w-full h-[320px] sm:h-[400px] bg-slate-950 rounded-2xl overflow-hidden border border-slate-800 flex flex-col items-center justify-center select-none group" id="scanner-viewport">
+                
+                <!-- 1. DRAG AND DROP FILE COMPONENT -->
+                <div id="panel-file" class="flex flex-col items-center justify-center text-center p-8 absolute inset-0 cursor-pointer text-white" onclick="document.getElementById('scanner-file-picker').click()">
+                  <input type="file" id="scanner-file-picker" accept="image/*" class="hidden" onchange="window.state.handleFilePick(this)" />
+                  <div class="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-white mb-4 shadow-lg group-hover:bg-white/10 transition">
+                    <i data-lucide="cloud-lightning" class="w-8 h-8 text-blue-400"></i>
+                  </div>
+                  <h5 class="font-display font-bold text-base">Select Animal Photo</h5>
+                  <p class="text-xs text-slate-400 mt-1.5 max-w-xs">Supports files under 10MB or direct drag & drop here</p>
+                </div>
+
+                <!-- 2. LIVE CAMERA CAMERA CONTAINER -->
+                <div id="panel-camera" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-slate-950">
+                  <video id="camera-video" class="w-full h-full object-cover" autoplay playsinline muted></video>
+                  <div class="absolute bottom-4 inset-x-0 flex items-center justify-center space-x-3">
+                    <button id="camera-shutter" onclick="window.state.captureCameraPhoto()" class="px-5 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-red-500/25 cursor-pointer">
+                      CAPTURE SNAPSHOT
+                    </button>
+                  </div>
+                </div>
+
+                <!-- 3. PRESET MULTIPLE CHOICES -->
+                <div id="panel-presets" class="hidden absolute inset-0 p-6 flex flex-col justify-center bg-slate-900/90 overflow-y-auto">
+                  <h4 class="font-display font-bold text-sm text-slate-300 mb-4 uppercase tracking-wider text-center">Diagnostic Presets</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    
+                    <!-- Preset Card 1 -->
+                    <div onclick="window.state.loadPreset('https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400')" class="bg-slate-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 cursor-pointer transition text-left h-36 relative group/card">
+                      <img src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover opacity-60" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-3 flex flex-col justify-end">
+                        <span class="text-[9px] font-mono font-bold uppercase py-0.5 px-2 bg-amber-500 text-slate-950 rounded-full w-max">Dog Skin</span>
+                        <h6 class="text-[11px] font-bold text-white mt-1">Buddy Stray Care</h6>
+                      </div>
+                    </div>
+
+                    <!-- Preset Card 2 -->
+                    <div onclick="window.state.loadPreset('https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=400')" class="bg-slate-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 cursor-pointer transition text-left h-36 relative group/card">
+                      <img src="https://images.unsplash.com/photo-1596733430284-f7437764b1a9?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover opacity-60" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-3 flex flex-col justify-end">
+                        <span class="text-[9px] font-mono font-bold uppercase py-0.5 px-2 bg-red-600 text-white rounded-full w-max">Cow Trauma</span>
+                        <h6 class="text-[11px] font-bold text-white mt-1">Struggling Bovine</h6>
+                      </div>
+                    </div>
+
+                    <!-- Preset Card 3 -->
+                    <div onclick="window.state.loadPreset('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400')" class="bg-slate-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 cursor-pointer transition text-left h-36 relative group/card">
+                      <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover opacity-60" />
+                      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent p-3 flex flex-col justify-end">
+                        <span class="text-[9px] font-mono font-bold uppercase py-0.5 px-2 bg-blue-600 text-white rounded-full w-max">Feline Eye</span>
+                        <h6 class="text-[11px] font-bold text-white mt-1">Conjunctivitis</h6>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+
+                <!-- VIEW FILE PREVIEW WRAPPER -->
+                <div id="panel-preview" class="hidden absolute inset-0 bg-slate-950 flex items-center justify-center">
+                  <img id="scanned-image-view" class="w-full h-full object-contain" />
+                  <button onclick="window.state.resetViewport()" class="absolute top-4 right-4 w-9 h-9 bg-black/60 hover:bg-black/90 text-white rounded-full flex items-center justify-center transition cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                  </button>
+                </div>
+
+                <!-- LASER SCANNER EFFECT ELEMENT -->
+                <div id="scanner-laser" class="hidden absolute inset-x-0 h-1 bg-blue-500 shadow-[0_0_15px_#2563EB] z-20 pointer-events-none laser-active"></div>
+
+                <!-- SCANNER STEP ANALYZER PROGRESSOVERLAY -->
+                <div id="scanner-loading" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm z-30 flex flex-col items-center justify-center text-white text-center p-6">
+                  <div class="w-16 h-16 rounded-full border-4 border-slate-800 border-t-blue-600 animate-spin mb-6"></div>
+                  <h4 id="scanner-progress-text" class="font-display font-bold text-base text-white tracking-wide">INITIALIZING IMAGE INGESTION ENGINE...</h4>
+                  <p class="text-xs text-slate-400 mt-2 font-mono" id="scanner-progress-sub">Checking pixels telemetry</p>
+                </div>
+
+              </div>
+
+              <!-- TELEMETRY ACTION SUBMIT CONTROLS -->
+              <div class="mt-6 flex flex-wrap gap-4 items-center justify-between border-t border-slate-200/60 pt-6">
+                <button onclick="window.state.triggerVisionAnalysis()" class="px-8 py-4 bg-[#0A2540] hover:bg-slate-900 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition cursor-pointer flex items-center gap-2">
+                  <i data-lucide="cpu" class="w-4.5 h-4.5 text-blue-400"></i> Deploy Veterinary AI Analysis
+                </button>
+                
+                <button id="scanner-clear-btn" onclick="window.state.resetViewport()" class="px-6 py-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs uppercase tracking-wider rounded-2xl transition cursor-pointer">
+                  Dismiss
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- RIGHT: AI Intelligence Output Card (5 Columns) -->
+          <div class="lg:col-span-5 flex flex-col justify-between" id="scanner-output-card">
+            
+            <!-- Default Static instructions placeholder card -->
+            <div class="bg-slate-50 border border-slate-200 rounded-[32px] p-8 h-full flex flex-col items-center justify-center text-center shadow-inner" id="scanner-empty-card">
+              <div class="w-20 h-20 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center mb-6">
+                🌌
+              </div>
+              <h4 class="font-display font-black text-xl text-slate-800">Awaiting Clinical Data Ingestion</h4>
+              <p class="text-xs text-slate-400 mt-2 max-w-xs leading-relaxed font-light">Select or snap a stray animal's distress image on the left and trigger the deployment of Gemini to generate localized veterinary telemetry.</p>
+            </div>
+
+            <!-- Dynamic actual AI Result Card -->
+            <div class="hidden bg-slate-900 border border-slate-800 rounded-[32px] p-6 sm:p-8 text-white h-full flex flex-col justify-between shadow-2xl relative" id="scanner-result-card">
+              <!-- Dyn pop -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= CITIZENS EMERGENCY PORTAL AND REPORTER ================= -->
+    <section id="reporter" class="py-24 bg-[#F8FAFC]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header title -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            📋 National Triage Directory
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            Distress Reports Triage
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Record localized street emergency coordinates. Filed reports are streamed instantly onto the municipal GIS map for local veterinary responders. Switch roles to simulate dispatcher updates.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          
+          <!-- LEFT: Form Input Card (5 Columns) -->
+          <div class="lg:col-span-5">
+            <div class="bg-white border border-slate-200 rounded-[32px] p-6 sm:p-8 shadow-md">
+              <h4 class="font-display font-extrabold text-xl text-slate-900 mb-6 flex items-center gap-2">
+                ✍️ File Distress Ticket
+              </h4>
+              
+              <form id="report-form" onsubmit="window.state.submitReportForm(event)" class="space-y-4">
+                
+                <div>
+                  <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Animal Category</label>
+                  <select id="form-animal-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition font-display text-sm">
+                    <option value="Dog">Dog 🐕</option>
+                    <option value="Cat">Cat 🐈</option>
+                    <option value="Cow">Cow 🐄</option>
+                    <option value="Bird">Bird 🦅</option>
+                    <option value="Other">Other / Bovine 🐃</option>
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Breed / Mix Details</label>
+                    <input type="text" id="form-breed" placeholder="e.g. Pariah Indie" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Clinical Condition</label>
+                    <input type="text" id="form-health" placeholder="e.g. Broken Front Leg" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800" required />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Distress Severity Level</label>
+                  <div class="grid grid-cols-3 gap-3">
+                    <label class="flex items-center justify-center py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 font-display transition" id="lbl-sev-low">
+                      <input type="radio" name="severity" value="low" checked class="hidden" onclick="window.state.selectFormSeverity('low')" /> Low
+                    </label>
+                    <label class="flex items-center justify-center py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 font-display transition" id="lbl-sev-moderate">
+                      <input type="radio" name="severity" value="moderate" class="hidden" onclick="window.state.selectFormSeverity('moderate')" /> Moderate
+                    </label>
+                    <label class="flex items-center justify-center py-2.5 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl cursor-pointer select-none text-xs font-bold text-slate-700 font-display transition" id="lbl-sev-critical">
+                      <input type="radio" name="severity" value="critical" class="hidden" onclick="window.state.selectFormSeverity('critical')" /> Critical
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Precise Incident Landmark Location</label>
+                  <div class="relative">
+                    <input type="text" id="form-location" placeholder="e.g. Sector-12 near metro depot gate 3" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-10 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800 font-display" required />
+                    <button type="button" onclick="window.state.captureGpsFeedback()" class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-600 hover:text-blue-500 tooltip cursor-pointer" title="Auto capture current GPS location">
+                      <i data-lucide="locate-fixed" class="w-4.5 h-4.5"></i>
+                    </button>
+                  </div>
+                  <div id="gps-cap-feedback" class="text-[10px] text-emerald-600 font-mono font-bold mt-1.5 hidden flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping"></span> GPS Coordinates Auto Captured successfully!
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Distress Summary Description</label>
+                  <textarea id="form-description" rows="3" placeholder="Explain visible coordinates of trauma or bleeding..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800" required></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Your Name</label>
+                    <input type="text" id="form-reporter-name" placeholder="Chetan Dhawan" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800" required />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold font-display uppercase text-slate-500 mb-1.5">Contact Number</label>
+                    <input type="text" id="form-reporter-contact" placeholder="+91 99999 xxxxx" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 outline-none hover:bg-slate-50/50 transition text-sm text-slate-800" required />
+                  </div>
+                </div>
+
+                <div class="pt-4">
+                  <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs uppercase tracking-wider transition cursor-pointer shadow-md shadow-blue-500/10 active:scale-98">
+                    File Emergency Incident
+                  </button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+
+          <!-- RIGHT: Interactive Live Queue (7 Columns) -->
+          <div class="lg:col-span-7 space-y-6">
+            <div class="bg-white border border-slate-200 rounded-[32px] p-6 sm:p-8 shadow-md">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-5 gap-4">
+                <div>
+                  <h4 class="font-display font-extrabold text-xl text-slate-900">🚨 Active Live Rescue Queue</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Real-time sync streaming active stray reports</p>
+                </div>
+                
+                <span class="text-[10px] font-mono tracking-widest font-extrabold text-emerald-600 bg-emerald-50 border border-emerald-200 uppercase py-1.5 px-3 rounded-full flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-ping"></span> Live synchronizer connected
+                </span>
+              </div>
+
+              <!-- Live listings list -->
+              <div class="divide-y divide-slate-100 max-h-[580px] overflow-y-auto pr-2 mt-4 space-y-4" id="reports-queue-list">
+                <!-- Dyn pop -->
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= INTERACTIVE COORDINATES RESCUE MAP ================= -->
+    <section id="map-section" class="py-24 bg-white border-t border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header title -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            🗺️ Interactive GIS Mapping
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            Metropolitan Rescue GIS Coordinates
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Trace emergency locations on our active street maps. Filter by ambulances, hospitals, NGOs, and individual incidents. The system calculates physical distance and displays automated route lines dynamically.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          <!-- Map visualizer (8 Columns) -->
+          <div class="lg:col-span-8">
+            <div class="relative w-full h-[480px] rounded-3xl overflow-hidden border border-slate-200 shadow-md">
+              <div id="leaflet-map" class="w-full h-full"></div>
+            </div>
+          </div>
+
+          <!-- Locality Tracker Sidebar controls (4 Columns) -->
+          <div class="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-3xl p-6 flex flex-col justify-between shadow-inner">
+            
+            <div>
+              <div class="border-b border-slate-200 pb-4 mb-4">
+                <h4 class="font-display font-bold text-base text-slate-900">Locality Dispatcher</h4>
+                <p class="text-xs text-slate-500 mt-0.5">Reposition focus area and track localized distance</p>
+              </div>
+
+              <div class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1" id="map-localities-selector">
+                <!-- Dyn pop -->
+              </div>
+            </div>
+
+            <!-- Distance result summary panel -->
+            <div class="mt-4 pt-4 border-t border-slate-200" id="map-nearest-sidebar">
+              <!-- Dyn pop -->
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= REALTIME ANALYTICS DASHBOARD ================= -->
+    <section id="dashboard" class="py-24 bg-white border-t border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header banner -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            📊 REAL-TIME METRICS SYNC
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            Veterinary Intelligence & Analytics
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Government diagnostics tracking of incident volumes, treatment clinical rescue speed ratios, animal category statistics, and municipal epidemiological trends.
+          </p>
+        </div>
+
+        <!-- Metric Cards Bento Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          
+          <!-- Card 1 -->
+          <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5 hover:-translate-y-1 transition duration-300">
+            <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="shield-alert" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-mono font-semibold tracking-widest text-slate-400">Total Registered</span>
+              <div id="stat-total-reports" class="text-3xl font-display font-black text-slate-900 mt-0.5">380</div>
+              <p class="text-[10px] text-slate-500 font-mono mt-1">+14% vs previous month</p>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5 hover:-translate-y-1 transition duration-300">
+            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="shield-check" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-mono font-semibold tracking-widest text-slate-400">Recovered & Stable</span>
+              <div id="stat-rescued" class="text-3xl font-display font-black text-slate-900 mt-0.5">328</div>
+              <p class="text-[10px] text-emerald-650 font-mono mt-1 font-semibold">92.4% Recovery Rate</p>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5 hover:-translate-y-1 transition duration-300">
+            <div class="w-14 h-14 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="activity" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-mono font-semibold tracking-widest text-slate-400">Critical Status</span>
+              <div id="stat-critical" class="text-3xl font-display font-black text-slate-900 mt-0.5">14</div>
+              <p class="text-[10px] text-orange-600 font-mono mt-1 font-semibold">Ambulance Dispatched</p>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200 shadow-sm flex items-center space-x-5 hover:-translate-y-1 transition duration-300">
+            <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="heart" class="w-7 h-7"></i>
+            </div>
+            <div>
+              <span class="text-[10px] uppercase font-mono font-semibold tracking-widest text-slate-400">Adopted Pets</span>
+              <div id="stat-adopted" class="text-3xl font-display font-black text-slate-900 mt-0.5">62</div>
+              <p class="text-[10px] text-slate-500 font-mono mt-1">Free adoption microchipping</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Chart layout container -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          <!-- Line chart volume (8 Columns) -->
+          <div class="lg:col-span-8 bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-sm">
+            <div>
+              <h3 class="font-display font-bold text-lg text-slate-900">Incident Volume vs Completed Rescues</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Timeline curves mapping registered reports against recovered releases</p>
+            </div>
+            <div class="w-full h-[320px] mt-6">
+              <canvas id="chart-volume"></canvas>
+            </div>
+          </div>
+
+          <!-- Pie chart categories distributions (4 Columns) -->
+          <div class="lg:col-span-4 bg-slate-50 border border-slate-200 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-sm">
+            <div>
+              <h3 class="font-display font-bold text-lg text-slate-900">Species Classifications</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Constituency share segments of rescued street animals</p>
+            </div>
+            <div class="w-full h-64 flex items-center justify-center mt-6">
+              <canvas id="chart-species"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    
+    <!-- ================= TRANSFORMATIONS OF HOPE COMPARATIVE SECTION ================= -->
+    <section class="py-24 bg-[#F8FAFC]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header title -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            🌱 Witness the Transformation
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            Our Stories of Hope
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Click to compare before-rescue crisis emergency states and after-recovery pet adoptions. From raw bleeding fractures to warm family cushions, witness lives being saved.
+          </p>
+        </div>
+
+        <!-- Before After comparisons panel -->
+        <div class="relative max-w-5xl mx-auto bg-white border border-slate-200 rounded-[32px] p-6 sm:p-12 shadow-xl hover:shadow-2xl transition duration-500 flex flex-col lg:flex-row gap-10 items-center justify-between">
+          
+          <!-- Left interactive frame comparing images (50/50 split) -->
+          <div class="w-full lg:w-1/2 flex flex-col items-center">
+            <div class="relative w-full h-[300px] sm:h-[350px] rounded-2xl overflow-hidden border border-slate-100 shadow-md group">
+              <img id="trans-viewing-img" src="" class="w-full h-full object-cover transition duration-500 group-hover:scale-102" />
+              
+              <!-- Indicator status label -->
+              <div class="absolute top-4 left-4 z-20">
+                <span id="trans-image-badge" class="font-mono text-[10px] tracking-widest font-extrabold uppercase py-1.5 px-3.5 rounded-full text-white shadow-xl bg-red-650"></span>
+              </div>
+
+              <!-- Scanner line -->
+              <div id="trans-laser" class="absolute inset-x-0 h-0.5 bg-red-500 top-1/2 pointer-events-none"></div>
+            </div>
+
+            <!-- Sliding Togglers toggle -->
+            <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 mt-6 w-full max-w-xs">
+              <button onclick="window.state.switchStoryImage(false)" id="trans-btn-before" class="flex-1 py-2 text-center text-xs font-bold rounded-lg cursor-pointer transition bg-red-600 text-white shadow-lg">
+                Before Crisis
+              </button>
+              <button onclick="window.state.switchStoryImage(true)" id="trans-btn-after" class="flex-1 py-2 text-center text-xs font-bold rounded-lg cursor-pointer transition text-slate-500">
+                After Recovery
+              </button>
+            </div>
+          </div>
+
+          <!-- Right narrative story details -->
+          <div class="w-full lg:w-1/2 flex flex-col justify-between self-stretch">
+            <div>
+              <div class="flex items-center text-slate-400 text-xs font-mono mb-2">
+                <i data-lucide="map-pin" class="w-4 h-4 text-orange-500 mr-1 shrink-0"></i> Location: <strong id="trans-location" class="text-slate-700 ml-1"></strong>
+              </div>
+              <h3 id="trans-name" class="font-display font-black text-2xl sm:text-3xl text-slate-900 border-b border-slate-100 pb-4"></h3>
+              
+              <p id="trans-story" class="text-sm font-serif italic text-slate-600 leading-relaxed mt-6 pl-4 border-l-4 border-blue-600 pl-4"></p>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
+              <div class="flex gap-4">
+                <div class="flex items-center space-x-1.5 text-xs text-slate-500">
+                  <span class="w-1.5 h-1.5 rounded-full bg-orange-500"></span> <span>Critical Care Done</span>
+                </div>
+                <div class="flex items-center space-x-1.5 text-xs text-slate-500">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> <span>Fully Restored</span>
+                </div>
+              </div>
+
+              <!-- Carousel Nav controls -->
+              <div class="flex items-center space-x-2">
+                <button onclick="window.state.prevStory()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 flex items-center justify-center cursor-pointer transition-all active:scale-90">
+                  <i data-lucide="chevron-left" class="w-4.5 h-4.5"></i>
+                </button>
+                <button onclick="window.state.nextStory()" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 flex items-center justify-center cursor-pointer transition-all active:scale-90">
+                  <i data-lucide="chevron-right" class="w-4.5 h-4.5"></i>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ================= ADOPTION COMPETENT PORTAL ================= -->
+    <section id="adoption" class="py-24 bg-white border-t border-slate-100">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <!-- Header title -->
+        <div class="text-center max-w-3xl mx-auto mb-16">
+          <span class="text-xs font-mono font-bold tracking-widest text-[#2563EB] bg-blue-100 py-1.5 px-3 rounded-full uppercase block w-max mx-auto mb-3">
+            ❤️ Community Adoption Hub
+          </span>
+          <h2 class="font-display font-black text-3xl sm:text-5xl text-slate-900 tracking-tight">
+            Find Your Companion Partner
+          </h2>
+          <p class="text-md text-slate-500 mt-3 font-light leading-relaxed">
+            Every rescued animal listed below has been fully processed, dewormed, vaccinated, sterilized, and provided warm behavioral assessment. Meet our brave survivors and bring one home.
+          </p>
+        </div>
+
+        <!-- Pet items list cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="adoption-grid">
+          <!-- Dyn pop -->
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ================= FLOATING INTELLIGENCE CHATBOT ASSISTANT ================= -->
+  <!-- Floating bubble button -->
+  <div class="fixed bottom-6 right-6 z-40 select-none">
+    <button onclick="window.state.toggleChatbot()" id="chatbot-trigger" class="w-14 h-14 rounded-full bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] hover:from-blue-500 hover:to-indigo-500 text-white flex items-center justify-center shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all outline-none border border-white/20 cursor-pointer relative group">
+      <i data-lucide="message-square" class="w-6 h-6" id="chat-icon-normal"></i>
+      <i data-lucide="x" class="w-6 h-6 hidden" id="chat-icon-close"></i>
+      <span class="absolute top-0 right-0 flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+      </span>
+    </button>
+  </div>
+
+  <!-- Chatbot dialogue overlay bubble container -->
+  <div id="chatbot-box" class="hidden fixed bottom-24 right-6 w-full max-w-[360px] sm:max-w-[400px] h-[520px] bg-[#0A2540] border border-white/10 rounded-3xl shadow-2xl flex flex-col justify-between overflow-hidden z-40 text-white transition-all duration-300">
+    
+    <!-- Top header details -->
+    <div class="p-4.5 bg-blue-950 border-b border-white/10 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-sm">
+          🐾
+        </div>
+        <div>
+          <h4 class="font-display font-extrabold text-sm text-white">PawGuard AI Intel</h4>
+          <div class="flex items-center text-[10px] text-emerald-400 font-mono tracking-wider font-semibold uppercase">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span> Compassionate Active
+          </div>
+        </div>
+      </div>
+      <a href="tel:1962" class="px-2.5 py-1 rounded-xl bg-red-950 hover:bg-red-900 border border-red-800 text-red-300 font-bold text-[9px] flex items-center gap-1 transition font-mono uppercase tracking-wider">
+        <i data-lucide="phone-call" class="w-3 h-3"></i> Call 1962
+      </a>
+    </div>
+
+    <!-- Scrollable messages container area -->
+    <div id="chat-messages-scroll" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-950/20 scrollbar-thin">
+      <!-- Welcome message -->
+      <div class="flex justify-start">
+        <div class="bg-white/10 text-slate-100 p-3.5 rounded-2xl rounded-tl-none border border-white/5 text-xs leading-relaxed max-w-[85%]">
+          Hello! I am <strong>PawGuard AI Companion</strong>, your 24/7 dedicated stray rescue, symptoms analyst, and municipal dispatcher. Ask me anything about veterinary first-aid, stray emergencies, or our adoption protocol!
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick FAQ tap suggestions -->
+    <div class="px-3 py-2 bg-slate-950/40 border-t border-white/5 overflow-x-auto whitespace-nowrap flex space-x-2 scrollbar-none" id="chat-faqs">
+      <!-- Dyn FAQ -->
+    </div>
+
+    <!-- Inputs container box -->
+    <div class="p-3 bg-blue-950/80 border-t border-white/10 flex items-center space-x-2.5">
+      <input type="text" id="chat-input-field" placeholder="Ask about mange symptoms, bleeding first-aid..." class="flex-grow bg-white/5 hover:bg-white/10 text-white placeholder-slate-400 border border-white/10 rounded-xl py-2.5 px-4 outline-none text-xs transition font-display" onkeydown="if(event.key === 'Enter') window.state.submitChatMessage()" />
+      <button onclick="window.state.submitChatMessage()" class="w-10 h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center cursor-pointer transition shrink-0 select-none">
+        <i data-lucide="send" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+  </div>
+
+
+  <!-- ================= ADOPTION REGISTRATION DIALOGMODAL OVERLAY ================= -->
+  <div id="adoption-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+    <div class="relative w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto flex flex-col md:flex-row">
+      
+      <!-- Close button -->
+      <button onclick="window.state.closeAdoptionModal()" class="absolute top-4 right-4 z-40 w-8.5 h-8.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full flex items-center justify-center cursor-pointer transition select-none">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Side profile display -->
+      <div class="w-full md:w-5/12 bg-slate-900 text-white p-6 flex flex-col justify-between shrink-0 relative bg-cover bg-center" id="adopt-modal-sidebar-bg">
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-900/45 z-0"></div>
+        <div class="relative z-10 flex flex-col justify-between h-full min-h-[160px] md:min-h-[290px]">
+          <span class="text-[9px] font-mono tracking-widest font-extrabold uppercase py-1 px-2.5 bg-blue-600 text-white rounded-full w-max shadow-md" id="adopt-modal-sidebar-badge"></span>
+          <div>
+            <span class="text-[10px] font-mono text-blue-400 uppercase tracking-wider block" id="adopt-modal-sidebar-breed"></span>
+            <h3 class="font-display font-black text-2xl" id="adopt-modal-sidebar-name"></h3>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Input Form sheet -->
+      <div class="w-full md:w-7/12 p-6 sm:p-8">
+        <h4 class="font-display font-black text-xl text-slate-900">Companion Adoption Request</h4>
+        <p class="text-xs text-slate-400 mt-1">Submit requirements to schedule clinical clinic meetup</p>
+        
+        <form id="adopt-form" onsubmit="window.state.submitAdoptionForm(event)" class="space-y-3.5 mt-5">
+          <input type="hidden" id="adopt-input-pet-id" />
+          <input type="hidden" id="adopt-input-pet-name" />
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-400 font-display mb-1">Your Full Name</label>
+            <input type="text" id="adopt-form-name" placeholder="Aarav Rawat" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 outline-none hover:bg-slate-50/50 transition text-xs" required />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 font-display mb-1">Email Coordinates</label>
+              <input type="email" id="adopt-form-email" placeholder="aarav@gmail.com" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 outline-none hover:bg-slate-50/50 transition text-xs" required />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold uppercase text-slate-400 font-display mb-1">Contact Phone</label>
+              <input type="text" id="adopt-form-phone" placeholder="+91 xxxxx" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 outline-none hover:bg-slate-50/50 transition text-xs" required />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-400 font-display mb-1">Target Appointment Visit Date</label>
+            <input type="date" id="adopt-form-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 outline-none hover:bg-slate-50/50 transition text-xs font-mono" required />
+          </div>
+
+          <div>
+            <label class="block text-[10px] font-bold uppercase text-slate-400 font-display mb-1">Short Motivation / Experience Statement</label>
+            <textarea id="adopt-form-message" rows="3" placeholder="Share why you wish to adopt..." class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-3.5 outline-none hover:bg-slate-50/50 transition text-xs" required></textarea>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs uppercase tracking-wider transition cursor-pointer shadow-md shadow-blue-500/10 active:scale-95">
+              File Selection Verification Card
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ================= PRINTABLE DISPATCH QR BEACON DIALOG OVERLAY ================= -->
+  <div id="qr-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm select-none">
+    <div id="printable-area" class="w-full max-w-sm bg-white border border-slate-200 rounded-[32px] p-8 shadow-2xl flex flex-col items-center justify-center text-center relative border-t-8 border-orange-500 select-all">
+      
+      <!-- Close button (will be hidden on browser print) -->
+      <button onclick="window.state.closeQrModal()" class="print:hidden absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 hover:scale-105 text-slate-700 flex items-center justify-center transition cursor-pointer select-none">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <!-- Logo & metadata -->
+      <div class="flex items-center space-x-1.5 mb-6">
+        <span class="text-xl">🐾</span>
+        <div>
+          <h3 class="font-display font-black text-slate-900 text-base">PawGuard AI Beacon Dispatch</h3>
+          <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-semibold">Triage Ticket Tracker</p>
+        </div>
+      </div>
+
+      <!-- QR server image -->
+      <div class="w-48 h-48 bg-slate-50 border-2 border-slate-100 p-3 rounded-2xl mb-4 flex items-center justify-center shadow-inner">
+        <img id="qr-beacon-image" src="" alt="Incident dispatch QR Code link" class="w-full h-full object-contain" />
+      </div>
+
+      <!-- Details of ticket -->
+      <p class="text-[10px] font-mono text-zinc-400 uppercase tracking-widest font-bold">DISPATCH SCAN STATION ID</p>
+      <div id="qr-ticket-id" class="text-2xl font-display font-black text-orange-500 mt-1"></div>
+      
+      <div class="mt-4 p-4.5 bg-slate-50 rounded-2xl border border-slate-100/80 w-full text-left space-y-2 text-xs">
+        <p class="text-slate-600 leading-relaxed font-light"><strong class="text-slate-900 font-semibold font-display">Species Category:</strong> <span id="qr-ticket-species" class="font-mono"></span></p>
+        <p class="text-slate-600 leading-relaxed font-light"><strong class="text-slate-900 font-semibold font-display">Triage Severity:</strong> <span id="qr-ticket-severity" class="font-mono uppercase font-bold text-orange-600"></span></p>
+        <p class="text-slate-600 leading-relaxed font-light"><strong class="text-slate-900 font-semibold font-display">Landmark Location:</strong> <span id="trans-landmark-meta" class="font-display"></span></p>
+      </div>
+
+      <!-- Print instructions -->
+      <p class="text-[10px] text-slate-400 mt-4 leading-relaxed font-mono">Scan the above QR code to securely access the Field Portal Gate from any Android/iOS camera device.</p>
+
+      <button onclick="window.print()" class="print:hidden mt-6 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-2xl text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-blue-500/10 active:scale-95 transition flex items-center justify-center gap-1.5">
+        <i data-lucide="printer" class="w-4 h-4"></i> Print Beacon Tag
+      </button>
+
+    </div>
+  </div>
+
+
+  <!-- ================= FOOTER BRIGADE AND SOCIALS ================= -->
+  <footer class="bg-slate-900 text-zinc-400 py-16 border-t border-slate-800 z-10 font-sans">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+        
+        <!-- About segment -->
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2.5">
+            <span class="text-2xl">🐾</span>
+            <span class="font-display font-black text-lg text-white">PawGuard AI</span>
+          </div>
+          <p class="text-xs text-slate-400 font-light leading-relaxed">
+            Metropolitan Veterinary Diagnostics, AI-synthesized animal vision analysis, real-time Firestore tracking registries, and synchronized field volunteer dispatch systems.
+          </p>
+          <div class="text-[10px] font-mono uppercase tracking-widest font-bold text-emerald-450 flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span> Government sync operational
+          </div>
+        </div>
+
+        <!-- NGO links -->
+        <div>
+          <h5 class="font-display font-extrabold text-sm text-white uppercase tracking-wider mb-4">Emergency Shelters</h5>
+          <ul class="space-y-2 text-xs">
+            <li>Friendicoes SECA (Defense Colony)</li>
+            <li>Sanjay Gandhi AnimalShelter (Raja Garden)</li>
+            <li>AWBI National Welfare Brigade Unit</li>
+            <li>PAWS India Free Sterilization Depot</li>
+          </ul>
+        </div>
+
+        <!-- Academic evaluator segment -->
+        <div>
+          <h5 class="font-display font-extrabold text-sm text-white uppercase tracking-wider mb-4">Academic Evaluation</h5>
+          <p class="text-xs text-slate-400 font-light leading-relaxed">
+            Developed in high fidelity for hackathons, computer science presentations, and public health reviews. Built with standard HTML5, CSS3 transitions, and Python-Flask/Firestore.
+          </p>
+        </div>
+
+        <!-- Developer details -->
+        <div class="space-y-3">
+          <h5 class="font-display font-extrabold text-sm text-white uppercase tracking-wider">Project Evaluators Guide</h5>
+          <p class="text-xs text-slate-400 font-light">To present this app successfully, utilize the custom Role Selector dropdown in the top navbar to instantly test volunteer or dispatcher dashboards live!</p>
+          <p class="text-[10px] font-mono text-zinc-500 leading-relaxed">© 2026 PawGuard. National Animal Welfare Directorate.</p>
+        </div>
+
+      </div>
+    </div>
+  </footer>
+
+
+  <!-- Leaflet Map JS script -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Chart.js and CDNs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- High-Fidelity Client-side interactive javascript states -->
+  <script src="script.js"></script>
+
+</body>
+</html>
