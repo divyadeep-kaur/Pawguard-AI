@@ -80,16 +80,16 @@ def cow(bg1, bg2, mood="happy"):
     return svg(600, 450, b, d)
 
 art = {
- "pet-buddy": dog("#c98b4f", "#8a5a2e", "#cfe9e4", "#9fd0c7", collar="#0f766e"),
- "pet-luna": cat("#e3a35e", "#b86f2c", "#fde7c8", "#f6c98d", collar="#f43f5e"),
- "pet-coco": dog("#e8c47a", "#cf9f4e", "#e4def5", "#bdb2e6", collar="#f43f5e", patch=False),
- "pet-sheru": dog("#a9703e", "#5e3b1f", "#d7ecd2", "#a9d6a0", collar="#2563eb"),
- "story-rocky-before": dog("#a37a52", "#6d4b2e", "#aeb9c2", "#7d8a94", mood="sad"),
- "story-rocky-after": dog("#c58a52", "#8a5a2e", "#fde9c9", "#f7c98b", collar="#0f766e"),
- "story-nandi-before": cow("#b6c0c7", "#8c99a3", mood="sad"),
- "story-nandi-after": cow("#cfe8f7", "#a7d3ee"),
- "story-kiku-before": cat("#9a9490", "#6f6a66", "#b3bcc4", "#7f8b94", mood="sad", eye="#a3b59a"),
- "story-kiku-after": cat("#f0ede8", "#cfc6bb", "#fde2e8", "#f9bcc9", eye="#7dd3fc", collar="#6366f1"),
+ "pet-buddy": dog("#c98b4f", "#8a5a2e", "#d8c8a6", "#b79f74", collar="#26412c"),
+ "pet-luna": cat("#e3a35e", "#b86f2c", "#e9d6b8", "#c9a877", collar="#c2410c"),
+ "pet-coco": dog("#e8c47a", "#cf9f4e", "#cdd5b6", "#a2b085", collar="#c2410c", patch=False),
+ "pet-sheru": dog("#a9703e", "#5e3b1f", "#dccdb3", "#bca27a", collar="#1e3a5f"),
+ "story-rocky-before": dog("#a37a52", "#6d4b2e", "#9aa09a", "#6f756f", mood="sad"),
+ "story-rocky-after": dog("#c58a52", "#8a5a2e", "#ecd9b3", "#d4b17a", collar="#26412c"),
+ "story-nandi-before": cow("#a9aca5", "#7d827b", mood="sad"),
+ "story-nandi-after": cow("#dfe6cc", "#bccaa0"),
+ "story-kiku-before": cat("#9a9490", "#6f6a66", "#a7aaa4", "#767b75", mood="sad", eye="#a3b59a"),
+ "story-kiku-after": cat("#f0ede8", "#cfc6bb", "#ead7bd", "#cda97a", eye="#8fb8c9", collar="#c2410c"),
 }
 for name, content in art.items():
     open(os.path.join(OUT, name + ".svg"), "w").write(content)
