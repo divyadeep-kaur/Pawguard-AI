@@ -25,7 +25,17 @@ class RescueService:
         if not animal_type or not location or not description or not reporter_name or not reporter_contact:
             raise ValueError("Missing required fields for reporting")
 
-        ticket_number = f"PWG-2026-{random.randint(1000, 9999)}"
+        severity = str(data.get("severity", "low")).lower()
+        if severity not in ("low", "moderate", "critical"):
+            severity = "low"
+        if len(str(description)) > 1000 or len(str(location)) > 200:
+            raise ValueError("Description or location is too long")
+
+        existing = FirestoreService.get_documents("rescueReports")
+        next_no = 1 + max(
+            [int(str(r.get("ticketNumber", "0")).rsplit("-", 1)[-1] or 0) for r in existing] or [0]
+        )
+        ticket_number = f"PWG-{datetime.datetime.utcnow().year}-{next_no:03d}"
         gps = data.get("gpsCoordinates")
         if not gps:
             # Random coordinates centered around Delhi
@@ -39,11 +49,11 @@ class RescueService:
             "animalType": animal_type,
             "breed": data.get("breed", "Unidentified"),
             "healthStatus": data.get("healthStatus", "Requires Inspection"),
-            "severity": data.get("severity", "low"),
+            "severity": severity,
             "description": description,
             "location": location,
             "gpsCoordinates": gps,
-            "imageUrl": data.get("imageUrl") or "https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=600",
+            "imageUrl": data.get("imageUrl") or "",
             "reporterName": reporter_name,
             "reporterContact": reporter_contact,
             "status": "Reported",
@@ -58,4 +68,6 @@ class RescueService:
 
     @staticmethod
     def update_report_status(ticket: str, new_status: str):
+        if new_status not in ("Reported", "Dispatched", "In-Rescue", "Recovered"):
+            raise ValueError("Invalid status")
         return FirestoreService.update_document("rescueReports", ticket, {"status": new_status})

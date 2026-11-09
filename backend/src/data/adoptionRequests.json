@@ -4,10 +4,10 @@
     "animalId": "pet-1",
     "animalName": "Buddy",
     "applicantName": "Aarav Rawat",
-    "applicantEmail": "aarav@gmail.com",
+    "applicantEmail": "aarav@example.com",
     "applicantPhone": "+91 99222 00033",
-    "visitDate": "2026-06-15",
-    "message": "I live in an apartment with a large dog-friendly terrace. Would love to bring Buddy home!",
+    "visitDate": "2026-11-15",
+    "message": "Large dog-friendly terrace, would love to bring Buddy home.",
     "status": "Contacted"
   }
 ]

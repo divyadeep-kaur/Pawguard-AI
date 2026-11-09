@@ -1,8 +1,12 @@
 node_modules/
-build/
 dist/
-coverage/
+build/
 .DS_Store
 *.log
+__pycache__/
+*.pyc
 .env*
 !.env.example
+# runtime database copies (created from the seed files on first run)
+backend/src/data/*_active.json
+pawguard_rescue_telemetry.csv

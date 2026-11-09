@@ -14,6 +14,9 @@ from src.services.adoption_service import AdoptionService
 from src.services.analytics_service import AnalyticsService
 from src.services.ai_service import AiService
 
+PUBLIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "public"))
+MAX_BODY = 8 * 1024 * 1024  # 8 MB, enough for a compressed photo
+
 MIME_TYPES = {
     ".html": "text/html",
     ".css": "text/css",
@@ -25,6 +28,8 @@ MIME_TYPES = {
     ".svg": "image/svg+xml",
     ".ico": "image/x-icon",
     ".txt": "text/plain",
+    ".webp": "image/webp",
+    ".webmanifest": "application/manifest+json",
 }
 
 class PawGuardHTTPHandler(BaseHTTPRequestHandler):
@@ -103,7 +108,7 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
 
         # 2. Static Files Serving (Client SPA routing support)
         # Determine whether to serve from the production dist/ folder or development/fallback root
-        base_dir = "./dist" if os.path.isdir("./dist") else "."
+        base_dir = PUBLIC_DIR
         
         rel_path = path.lstrip("/")
         if not rel_path:
@@ -111,9 +116,9 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
             
         target_file = os.path.abspath(os.path.join(base_dir, rel_path))
         base_abs = os.path.abspath(base_dir)
-        
-        # Escape guard
-        if not target_file.startswith(base_abs):
+
+        # Escape guard: only ever serve files inside public/
+        if target_file != base_abs and not target_file.startswith(base_abs + os.sep):
             self.send_json(403, {"error": "Access Denied"})
             return
             
@@ -133,13 +138,27 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
         content_length = int(self.headers.get("Content-Length", 0))
         if content_length == 0:
             return {}
+        if content_length > MAX_BODY:
+            raise ValueError("Request body too large (max 8 MB)")
         raw_body = self.rfile.read(content_length).decode("utf-8")
         try:
             return json.loads(raw_body)
         except json.JSONDecodeError:
-            return {}
+            raise ValueError("Invalid JSON body")
 
     def do_POST(self):
+        try:
+            self._do_post()
+        except ValueError as ve:
+            self.send_json(400, {"error": str(ve)})
+
+    def do_PUT(self):
+        try:
+            self._do_put()
+        except ValueError as ve:
+            self.send_json(400, {"error": str(ve)})
+
+    def _do_post(self):
         path = self.path.split("?")[0]
         
         if path == "/api/rescue-reports":
@@ -191,7 +210,7 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
         else:
             self.send_json(404, {"error": f"POST endpoint {path} not found"})
             
-    def do_PUT(self):
+    def _do_put(self):
         path = self.path.split("?")[0]
         
         if path.startswith("/api/rescue-reports/"):
@@ -215,7 +234,7 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
             self.send_json(404, {"error": f"PUT endpoint {path} not found"})
 
 if __name__ == "__main__":
-    PORT = 3000
+    PORT = int(os.environ.get("PORT", "3000"))
     print("================== PAWGUARD AI http.server INGESTION ==================")
     print("Database seeding verification initialization...")
     try:

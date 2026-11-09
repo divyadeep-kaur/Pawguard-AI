@@ -4,6 +4,9 @@ import random
 import urllib.request
 import urllib.error
 
+MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+
+
 def get_api_key():
     api_key = os.environ.get("GEMINI_API_KEY")
     if api_key in (None, "", "MY_GEMINI_API_KEY"):
@@ -59,7 +62,8 @@ class AiService:
             ai_result = random.choice(mock_analyses)
             return {
                 "success": True,
-                "source": "PawGuard Vision Engine - Local AI Model Sandbox Simulation (Mock)",
+                "demo": True,
+                "source": "Demo mode: no Gemini API key set, so this is a sample result, not a real analysis of your photo",
                 "data": {
                     **ai_result,
                     "nearbyResources": [
@@ -119,7 +123,7 @@ class AiService:
                 }
             }
             
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={api_key}"
             req = urllib.request.Request(
                 url, 
                 method="POST", 
@@ -127,7 +131,7 @@ class AiService:
                 data=json.dumps(payload).encode("utf-8")
             )
             
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text_out = data["candidates"][0]["content"]["parts"][0]["text"].strip()
                 parsed_data = json.loads(text_out)
@@ -139,7 +143,8 @@ class AiService:
             
             return {
                 "success": True,
-                "source": "Gemini Vision Model 3.5 Flash Protocol",
+                "demo": False,
+                "source": "Gemini vision analysis",
                 "data": {
                     **parsed_data,
                     "nearbyResources": nearby
@@ -150,7 +155,8 @@ class AiService:
             # Fall back to structured response gracefully
             return {
                 "success": True,
-                "source": "PawGuard Vision Engine - Error Fallback Simulator",
+                "demo": True,
+                "source": "The AI service was unreachable, so this is a generic sample result",
                 "data": {
                     "animalType": "Dog",
                     "breed": "Indian Stray Dog Mix",
@@ -190,7 +196,8 @@ class AiService:
             
             return {
                 "content": reply,
-                "source": "PawGuard Compassionate Sandbox Intelligence (Mock)"
+                "demo": True,
+                "source": "Demo mode (no Gemini API key set)"
             }
 
         # Genuine Gemini Chat POST payload in standard format
@@ -221,7 +228,7 @@ class AiService:
                 }
             }
             
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key={api_key}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent?key={api_key}"
             req = urllib.request.Request(
                 url, 
                 method="POST", 
@@ -229,17 +236,19 @@ class AiService:
                 data=json.dumps(payload).encode("utf-8")
             )
             
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=30) as resp:
                 data = json.loads(resp.read().decode("utf-8"))
                 text_out = data["candidates"][0]["content"]["parts"][0]["text"]
                 
             return {
                 "content": text_out,
-                "source": "Gemini 3.5 Flash Active Intelligence Link"
+                "demo": False,
+                "source": "Gemini"
             }
         except Exception as e:
             print(f"Genuine Gemini chat completion failed: {e}")
             return {
                 "content": "Our AI network is experiencing high latency sync, but please remember: for any life-threatening situation, dial our toll-free hotline 1962 instantly.",
-                "source": "PawGuard Backup Protocol (Simulation)"
+                "demo": True,
+                "source": "AI temporarily unreachable"
             }

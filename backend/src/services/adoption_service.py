@@ -17,7 +17,8 @@ class AdoptionService:
         if not animal_id or not applicant_name or not applicant_email or not applicant_phone:
             raise ValueError("Missing required adoption fields")
 
-        adopt_id = f"ADOPT-{random.randint(100, 999)}"
+        existing = FirestoreService.get_documents("adoptionRequests")
+        adopt_id = f"ADOPT-{101 + len(existing)}"
         visit_date = data.get("visitDate") or datetime.date.today().isoformat()
 
         new_request = {

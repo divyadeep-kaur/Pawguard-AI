@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PawGuard AI · Help stray animals, faster</title>
+<meta name="description" content="Snap a photo of an injured stray, get instant AI first-aid guidance, file a rescue report, and track it on a live map. Adopt rescued animals.">
+<meta name="theme-color" content="#0f766e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a class="skip" href="#main">Skip to content</a>
+
+<div class="helpline" role="note">
+  <span>🚨 Animal in danger right now? Call the national animal helpline <a href="tel:1962">1962</a></span>
+</div>
+
+<header class="nav">
+  <div class="wrap nav-in">
+    <a href="#top" class="brand" aria-label="PawGuard AI home"><span class="brand-mark">🐾</span>PawGuard <b>AI</b></a>
+    <nav id="nav-links" aria-label="Main">
+      <a href="#scan">Scan</a>
+      <a href="#report">Report</a>
+      <a href="#map">Map</a>
+      <a href="#impact">Impact</a>
+      <a href="#adopt">Adopt</a>
+      <a href="#help">First aid</a>
+    </nav>
+    <a href="#report" class="btn btn-primary btn-sm nav-cta">Report an animal</a>
+    <button class="menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false">☰</button>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <span class="pill">🐶 Rescue · Heal · Rehome</span>
+      <h1>See a stray in trouble?<br><em>Help it in under a minute.</em></h1>
+      <p class="lead">Take a photo for instant AI first-aid guidance, file a geo-tagged rescue report, and follow the case until the animal is safe. Healthy rescues are listed for adoption.</p>
+      <div class="hero-actions">
+        <a href="#scan" class="btn btn-primary">📸 Scan an animal</a>
+        <a href="#report" class="btn btn-ghost">File a report</a>
+      </div>
+      <ul class="hero-stats" id="hero-stats" aria-live="polite">
+        <li><b data-stat="totalReports">–</b><span>reports filed</span></li>
+        <li><b data-stat="recovered">–</b><span>animals recovered</span></li>
+        <li><b data-stat="activeCases">–</b><span>cases in progress</span></li>
+      </ul>
+    </div>
+    <div class="hero-card">
+      <div class="steps">
+        <h2>How it works</h2>
+        <ol>
+          <li><span>1</span><div><b>Snap</b> a clear photo of the animal from a safe distance.</div></li>
+          <li><span>2</span><div><b>Get guidance</b>: species, likely condition, severity and first-aid steps.</div></li>
+          <li><span>3</span><div><b>Report</b> it with location so rescuers can be dispatched.</div></li>
+          <li><span>4</span><div><b>Track</b> the case from <i>Reported</i> to <i>Recovered</i>.</div></li>
+        </ol>
+        <p class="note">PawGuard AI gives guidance, not a veterinary diagnosis. In an emergency, call 1962 or a local vet.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCANNER -->
+<section class="section" id="scan">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">AI health scan</p>
+      <h2>Upload a photo, get first-aid guidance</h2>
+      <p>Works best with a clear, well-lit photo showing the whole animal and any visible injury.</p>
+    </header>
+
+    <div class="split">
+      <div class="card">
+        <label class="drop" id="drop" tabindex="0">
+          <input type="file" id="file" accept="image/*" capture="environment" hidden>
+          <img id="preview" alt="Preview of the selected animal" hidden>
+          <div id="drop-empty">
+            <div class="drop-ico">📷</div>
+            <b>Tap to take or choose a photo</b>
+            <span>or drag &amp; drop an image here</span>
+          </div>
+          <div class="scanline" id="scanline" hidden></div>
+        </label>
+        <div class="row">
+          <button class="btn btn-primary" id="scan-btn" disabled>Analyse photo</button>
+          <button class="btn btn-ghost" id="scan-clear" hidden>Clear</button>
+        </div>
+        <p class="hint" id="scan-hint">Photos are resized in your browser before upload.</p>
+      </div>
+
+      <div class="card result" id="result" aria-live="polite">
+        <div class="empty" id="result-empty">
+          <div class="drop-ico">🩺</div>
+          <b>Your analysis will appear here</b>
+          <span>Species, likely condition, severity, first-aid steps and what to do next.</span>
+        </div>
+        <div id="result-body" hidden></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REPORT -->
+<section class="section alt" id="report">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Rescue report</p>
+      <h2>Report an animal that needs help</h2>
+      <p>Your report appears instantly in the live queue and on the map.</p>
+    </header>
+
+    <div class="split">
+      <form class="card form" id="report-form" novalidate>
+        <div class="grid2">
+          <label>Animal
+            <select id="f-type" required>
+              <option>Dog</option><option>Cat</option><option>Cow</option><option>Bird</option><option>Other</option>
+            </select>
+          </label>
+          <label>Breed / look <small>(optional)</small>
+            <input id="f-breed" placeholder="e.g. brown indie dog" maxlength="80">
+          </label>
+        </div>
+        <label>What is wrong?
+          <input id="f-health" placeholder="e.g. limping, bleeding, very thin" maxlength="120">
+        </label>
+        <fieldset>
+          <legend>Urgency</legend>
+          <div class="seg" id="f-sev">
+            <label><input type="radio" name="sev" value="low" checked><span>Low</span></label>
+            <label><input type="radio" name="sev" value="moderate"><span>Moderate</span></label>
+            <label class="crit"><input type="radio" name="sev" value="critical"><span>Critical</span></label>
+          </div>
+        </fieldset>
+        <label>Location
+          <div class="inline">
+            <input id="f-loc" required placeholder="Street, landmark, area" maxlength="200">
+            <button type="button" class="btn btn-ghost btn-sm" id="gps-btn">📍 Use my location</button>
+          </div>
+          <small id="gps-note"></small>
+        </label>
+        <label>Details
+          <textarea id="f-desc" rows="3" required placeholder="Behaviour, how long it has been there, anything rescuers should know" maxlength="1000"></textarea>
+        </label>
+        <div class="grid2">
+          <label>Your name <input id="f-name" required autocomplete="name" maxlength="80"></label>
+          <label>Phone / email <input id="f-contact" required autocomplete="tel" maxlength="80"></label>
+        </div>
+        <p class="error" id="report-error" role="alert" hidden></p>
+        <button class="btn btn-primary btn-block" type="submit" id="report-submit">Submit rescue report</button>
+      </form>
+
+      <div class="card queue">
+        <div class="queue-head">
+          <h3>Live rescue queue</h3>
+          <div class="chips" id="queue-filter" role="group" aria-label="Filter reports">
+            <button class="chip on" data-f="all">All</button>
+            <button class="chip" data-f="open">Open</button>
+            <button class="chip" data-f="Recovered">Recovered</button>
+          </div>
+        </div>
+        <ul id="queue" class="queue-list"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAP -->
+<section class="section" id="map">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Live map</p>
+      <h2>Where animals need help right now</h2>
+      <p>Click a marker or a list item to see the case. Colours show urgency.</p>
+    </header>
+    <div class="split map-split">
+      <div class="card nopad"><div id="leaflet-map" role="application" aria-label="Map of rescue reports"></div></div>
+      <div class="card">
+        <div class="legend">
+          <span><i class="dot d-critical"></i>Critical</span>
+          <span><i class="dot d-moderate"></i>Moderate</span>
+          <span><i class="dot d-low"></i>Low</span>
+          <span><i class="dot d-done"></i>Recovered</span>
+        </div>
+        <ul id="map-list" class="map-list"></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPACT -->
+<section class="section alt" id="impact">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Impact</p>
+      <h2>Numbers that update as reports come in</h2>
+      <p>Every figure here is calculated from the reports in the system.</p>
+    </header>
+    <div class="kpis" id="kpis"></div>
+    <div class="charts">
+      <div class="card"><h3>Reports by month</h3><div id="chart-months"></div></div>
+      <div class="card"><h3>Reports by species</h3><div id="chart-species"></div></div>
+      <div class="card"><h3>Most common conditions</h3><div id="chart-conditions"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ADOPT -->
+<section class="section" id="adopt">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Adopt</p>
+      <h2>Rescued, recovered, ready for a home</h2>
+      <p>All animals are vaccinated and vet-cleared. Send a request and the shelter team will contact you to arrange a visit.</p>
+    </header>
+    <div class="pets" id="pets"></div>
+  </div>
+</section>
+
+<!-- STORIES -->
+<section class="section alt" id="success">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Before &amp; after</p>
+      <h2>Stories that started with one photo</h2>
+    </header>
+    <div class="stories" id="stories"></div>
+  </div>
+</section>
+
+<!-- FIRST AID -->
+<section class="section" id="help">
+  <div class="wrap">
+    <header class="sec-head">
+      <p class="eyebrow">Know what to do</p>
+      <h2>Quick first-aid &amp; safety guide</h2>
+    </header>
+    <div class="split">
+      <div class="cards3 tips">
+        <article class="card tip"><h3>🩸 Bleeding</h3><p>Press a clean cloth firmly on the wound. Do not remove it if soaked; add more on top. Keep the animal calm and still.</p></article>
+        <article class="card tip"><h3>🦴 Suspected fracture</h3><p>Do not straighten or lift the limb. Move the animal only if it is in traffic, using a blanket as a stretcher.</p></article>
+        <article class="card tip"><h3>🌡️ Heatstroke</h3><p>Move to shade, offer small sips of water, wet the paws and belly with cool (not icy) water.</p></article>
+        <article class="card tip"><h3>⚠️ Stay safe</h3><p>Injured animals can bite from fear. Keep distance, avoid the head, wear gloves if you have them, never force food.</p></article>
+      </div>
+      <aside class="card contacts">
+        <h3>Emergency contacts (India)</h3>
+        <ul>
+          <li><b>1962</b><span>National animal ambulance helpline (available in many states)</span></li>
+          <li><b>112</b><span>General emergency number</span></li>
+          <li><b>AWBI</b><span>Animal Welfare Board of India, for cruelty complaints</span></li>
+        </ul>
+        <p class="note">Availability of 1962 varies by state. If it does not connect, call a local vet or rescue NGO.</p>
+      </aside>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap foot-in">
+    <div><a href="#top" class="brand"><span class="brand-mark">🐾</span>PawGuard <b>AI</b></a><p>Faster help for street animals.</p></div>
+    <p class="small">AI output is guidance only and is not a substitute for a licensed veterinarian.</p>
+  </div>
+</footer>
+
+<!-- CHAT -->
+<button class="chat-fab" id="chat-fab" aria-label="Open assistant" aria-expanded="false">💬</button>
+<section class="chat" id="chat" hidden aria-label="PawGuard assistant">
+  <header><b>PawGuard assistant</b><button id="chat-close" aria-label="Close">✕</button></header>
+  <div class="chat-log" id="chat-log" aria-live="polite"></div>
+  <div class="chat-faq" id="chat-faq">
+    <button>What should I do for a wounded dog?</button>
+    <button>How does adoption work?</button>
+    <button>What is the helpline number?</button>
+  </div>
+  <form id="chat-form"><input id="chat-input" placeholder="Ask about first aid, adoption…" autocomplete="off" maxlength="500"><button class="btn btn-primary btn-sm">Send</button></form>
+</section>
+
+<!-- ADOPT MODAL -->
+<dialog id="adopt-dialog">
+  <form method="dialog" id="adopt-form" class="form">
+    <header class="dlg-head"><h3 id="adopt-title">Adopt</h3><button value="cancel" aria-label="Close">✕</button></header>
+    <label>Your name <input id="a-name" required maxlength="80"></label>
+    <div class="grid2">
+      <label>Email <input id="a-email" type="email" required maxlength="120"></label>
+      <label>Phone <input id="a-phone" type="tel" required maxlength="40"></label>
+    </div>
+    <label>Preferred visit date <input id="a-date" type="date"></label>
+    <label>Tell us about your home <textarea id="a-msg" rows="3" maxlength="600"></textarea></label>
+    <p class="error" id="adopt-error" role="alert" hidden></p>
+    <button class="btn btn-primary btn-block" id="adopt-submit" type="submit">Send adoption request</button>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin></script>
+<script src="app.js"></script>
+</body>
+</html>

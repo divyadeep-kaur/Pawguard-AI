@@ -1,57 +1,53 @@
+from collections import Counter, OrderedDict
+from datetime import datetime
+
 from .firestore_service import FirestoreService
 
+DONE = ("Recovered",)
+ACTIVE = ("Dispatched", "In-Rescue")
+
+
+def _month_key(ts: str):
+    try:
+        return datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except Exception:
+        return None
+
+
 class AnalyticsService:
+    """All figures are computed from the stored reports - nothing is padded or invented."""
+
     @staticmethod
     def get_analytics_data():
-        rescue_reports = FirestoreService.get_documents("rescueReports")
-        adoption_requests = FirestoreService.get_documents("adoptionRequests")
+        reports = FirestoreService.get_documents("rescueReports")
+        adoptions = FirestoreService.get_documents("adoptionRequests")
 
-        total = len(rescue_reports)
-        critical = sum(1 for r in rescue_reports if str(r.get("severity", "")).lower() == "critical")
-        rescued_count = sum(1 for r in rescue_reports if r.get("status") in ("Recovered", "In-Rescue"))
+        by_status = Counter(r.get("status", "Reported") for r in reports)
+        by_severity = Counter(str(r.get("severity", "low")).lower() for r in reports)
+        by_species = Counter(r.get("animalType", "Other") for r in reports)
+        by_condition = Counter(r.get("healthStatus", "Unknown") for r in reports)
 
-        # Base mock offset metrics to produce beautifully illustrated charts
-        total_reports = total + 120
-        rescued_animals = rescued_count + 98
-        critical_cases = critical + 8
-        adoptions_completed = len(adoption_requests) + 42
-
-        disease_stats = [
-            {"name": "Skin Infection / Scabies", "value": 34},
-            {"name": "Malnutrition", "value": 45},
-            {"name": "Wounds / Injuries", "value": 28},
-            {"name": "Fractures", "value": 12},
-            {"name": "Eye Allergy / Infections", "value": 21}
-        ]
-
-        monthly_trends = [
-            {"month": "Jan", "reports": 22, "rescued": 18},
-            {"month": "Feb", "reports": 28, "rescued": 25},
-            {"month": "Mar", "reports": 35, "rescued": 30},
-            {"month": "Apr", "reports": 42, "rescued": 39},
-            {"month": "May", "reports": 51, "rescued": 47},
-            {"month": "Jun", "reports": total + 60, "rescued": rescued_count + 55}
-        ]
-
-        dog_count = sum(1 for r in rescue_reports if "dog" in str(r.get("animalType", "")).lower())
-        cat_count = sum(1 for r in rescue_reports if "cat" in str(r.get("animalType", "")).lower())
-        cow_count = sum(1 for r in rescue_reports if "cow" in str(r.get("animalType", "")).lower())
-        bird_count = sum(1 for r in rescue_reports if "bird" in str(r.get("animalType", "")).lower())
-
-        category_counts = [
-            {"type": "Dog", "count": dog_count + 65},
-            {"type": "Cat", "count": cat_count + 29},
-            {"type": "Cow", "count": cow_count + 18},
-            {"type": "Bird", "count": bird_count + 11},
-            {"type": "Other", "count": 7}
-        ]
+        months = OrderedDict()
+        for r in sorted(reports, key=lambda r: r.get("timestamp", "")):
+            dt = _month_key(r.get("timestamp", ""))
+            if not dt:
+                continue
+            key = dt.strftime("%Y-%m")
+            m = months.setdefault(key, {"month": dt.strftime("%b"), "reports": 0, "recovered": 0})
+            m["reports"] += 1
+            if r.get("status") in DONE:
+                m["recovered"] += 1
 
         return {
-            "totalReports": total_reports,
-            "rescuedAnimals": rescued_animals,
-            "criticalCases": critical_cases,
-            "adoptionsCompleted": adoptions_completed,
-            "diseaseStats": disease_stats,
-            "monthlyTrends": monthly_trends,
-            "categoryCounts": category_counts
+            "totalReports": len(reports),
+            "recovered": by_status.get("Recovered", 0),
+            "activeCases": sum(by_status.get(s, 0) for s in ACTIVE),
+            "awaitingResponse": by_status.get("Reported", 0),
+            "criticalCases": by_severity.get("critical", 0),
+            "adoptionRequests": len(adoptions),
+            "byStatus": dict(by_status),
+            "bySeverity": dict(by_severity),
+            "species": [{"type": k, "count": v} for k, v in by_species.most_common()],
+            "conditions": [{"name": k, "value": v} for k, v in by_condition.most_common(6)],
+            "monthlyTrends": list(months.values()),
         }
