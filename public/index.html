@@ -43,15 +43,17 @@
 <main id="main">
 
 <!-- HERO -->
-<section class="hero" id="top">
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <span class="pill">🐶 Rescue · Heal · Rehome</span>
+<section class="hero2" id="top" aria-roledescription="carousel" aria-label="Rescued animals">
+  <div class="slides" id="slides" aria-hidden="true"></div>
+  <div class="hero2-shade"></div>
+  <div class="wrap hero2-in">
+    <div class="glass hero-glass">
+      <span class="pill-g">🐶 Rescue · Heal · Rehome</span>
       <h1>See a stray in trouble?<br><em>Help it in under a minute.</em></h1>
       <p class="lead">Take a photo for instant AI first-aid guidance, file a geo-tagged rescue report, and follow the case until the animal is safe. Healthy rescues are listed for adoption.</p>
       <div class="hero-actions">
-        <a href="#scan" class="btn btn-primary">📸 Scan an animal</a>
-        <a href="#report" class="btn btn-ghost">File a report</a>
+        <a href="#scan" class="btn btn-light">📸 Scan an animal</a>
+        <a href="#report" class="btn btn-glass">File a report</a>
       </div>
       <ul class="hero-stats" id="hero-stats" aria-live="polite">
         <li><b data-stat="totalReports">–</b><span>reports filed</span></li>
@@ -59,15 +61,17 @@
         <li><b data-stat="activeCases">–</b><span>cases in progress</span></li>
       </ul>
     </div>
-    <div class="collage" aria-hidden="true">
-      <div class="c-main"><img src="img/pet-buddy.svg" alt=""><span class="float f1">✅ Vaccinated</span></div>
-      <div class="c-sm c1"><img src="img/pet-luna.svg" alt=""></div>
-      <div class="c-sm c2"><img src="img/pet-coco.svg" alt=""></div>
-      <span class="float f3">📍 Ticket PWG-2026-004 · Recovered</span>
+    <div class="glass slide-card" aria-live="off">
+      <div class="sc-cap"><span id="sc-emoji">🐶</span><div><b id="sc-name">Buddy</b><small id="sc-sub">Rescued, vaccinated, adopted</small></div></div>
+      <div class="sc-ctl">
+        <button id="sc-prev" aria-label="Previous photo">‹</button>
+        <div class="sc-dots" id="sc-dots" role="tablist" aria-label="Choose photo"></div>
+        <button id="sc-next" aria-label="Next photo">›</button>
+      </div>
+      <small class="sc-hint">Swipe or drag to change</small>
     </div>
   </div>
 </section>
-
 
 <!-- HOW IT WORKS -->
 <section class="how" aria-label="How it works">

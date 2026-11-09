@@ -19,10 +19,6 @@
       if (!(r.ok && j.status === 'ok')) throw new Error('no api');
     } catch {
       mode = 'demo';
-      const b = document.createElement('div');
-      b.className = 'demo-banner';
-      b.textContent = 'Demo mode: sample data. Reports and adoption requests you add are saved in this browser only.';
-      document.querySelector('.helpline').after(b);
     }
   })();
 
@@ -381,10 +377,44 @@
   $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); const i = $('#chat-input'); const t = i.value.trim(); i.value = ''; send(t); });
   $('#chat-faq').addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') send(e.target.textContent); });
 
-  // Real photos (optional): img/photos/hero-1.jpg .. hero-3.jpg replace the hero collage illustrations.
-  $$('.collage img').forEach((im, i) => {
-    const t = new Image(); t.onload = () => { im.src = t.src; }; t.src = `img/photos/hero-${i + 1}.jpg`;
-  });
+  // ---------- hero slideshow ----------
+  const HERO = [
+    { art: 'img/pet-buddy.svg', photo: 'img/photos/hero-1.jpg', emoji: '🐶', name: 'Buddy', sub: 'Rescued, vaccinated, adopted' },
+    { art: 'img/pet-luna.svg', photo: 'img/photos/hero-2.jpg', emoji: '🐱', name: 'Luna', sub: 'Found in a stormwater pipe, now safe' },
+    { art: 'img/story-rocky-after.svg', photo: 'img/photos/hero-3.jpg', emoji: '🐕', name: 'Rocky', sub: 'From a highway divider to a loving home' },
+    { art: 'img/pet-sheru.svg', photo: 'img/photos/hero-4.jpg', emoji: '🐕', name: 'Sheru', sub: 'Healed and ready for adoption' },
+    { art: 'img/story-kiku-after.svg', photo: 'img/photos/hero-5.jpg', emoji: '🐈', name: 'Kiku', sub: 'Cured of eye infection, now adopted' },
+  ];
+  (function heroSlider() {
+    const wrap = $('#slides'), dots = $('#sc-dots'), hero = $('#top');
+    let i = 0, timer = null, x0 = null, moved = false;
+    HERO.forEach((h, n) => {
+      const d = document.createElement('div'); d.className = 'slide'; d.style.backgroundImage = `url(${h.art})`; wrap.appendChild(d);
+      const t = new Image(); t.onload = () => { d.style.backgroundImage = `url(${h.photo})`; }; t.src = h.photo; // real photo replaces art if present
+      const b = document.createElement('button'); b.setAttribute('aria-label', `Photo ${n + 1} of ${HERO.length}`); b.onclick = () => { go(n); restart(); }; dots.appendChild(b);
+    });
+    const slides = [...wrap.children], dotEls = [...dots.children];
+    function go(n, dir = 1) {
+      const prev = slides[i]; prev.classList.remove('on'); prev.classList.add(dir > 0 ? 'out-l' : 'out-r');
+      setTimeout(() => prev.classList.remove('out-l', 'out-r'), 1300);
+      i = (n + HERO.length) % HERO.length;
+      slides[i].classList.add('on');
+      dotEls.forEach((d, k) => d.classList.toggle('on', k === i));
+      $('#sc-emoji').textContent = HERO[i].emoji; $('#sc-name').textContent = HERO[i].name; $('#sc-sub').textContent = HERO[i].sub;
+    }
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const restart = () => { clearInterval(timer); if (!reduce) timer = setInterval(() => go(i + 1), 5000); };
+    $('#sc-next').onclick = () => { go(i + 1); restart(); };
+    $('#sc-prev').onclick = () => { go(i - 1, -1); restart(); };
+    // swipe / drag
+    hero.addEventListener('pointerdown', (e) => { if (e.target.closest('a,button')) return; x0 = e.clientX; moved = false; hero.classList.add('drag'); });
+    window.addEventListener('pointerup', (e) => {
+      if (x0 === null) return; const dx = e.clientX - x0; x0 = null; hero.classList.remove('drag');
+      if (Math.abs(dx) > 45) { go(i + (dx < 0 ? 1 : -1), dx < 0 ? 1 : -1); restart(); }
+    });
+    hero.addEventListener('mouseenter', () => clearInterval(timer)); hero.addEventListener('mouseleave', restart);
+    go(0); restart();
+  })();
 
   // ---------- boot ----------
   initMap();

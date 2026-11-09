@@ -261,3 +261,34 @@ dialog::backdrop{background:rgba(10,20,22,.55)}
 .split>*,.grid2>*,.form>*,.form label,.track input,.inline input{min-width:0}input,select,textarea{max-width:100%}
 .ph img.ov:not(.ok){visibility:hidden}
 .seg label{position:relative}.seg input{width:1px;height:1px}
+
+/* ===== Hero: glassmorphism over a swipeable, softly blurred photo slideshow ===== */
+.hero2{position:relative;min-height:min(640px,86vh);display:flex;align-items:center;overflow:hidden;color:#fff;background:#12302d;touch-action:pan-y;cursor:grab}
+.hero2.drag{cursor:grabbing}
+.slides{position:absolute;inset:-24px}
+.slide{position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease,transform 6s ease-out;transform:scale(1.04);background-size:cover;background-position:center;filter:blur(5px) saturate(1.1)}
+.slide.on{opacity:1;transform:scale(1.12)}
+.slide.out-l{transform:translateX(-4%) scale(1.06)}.slide.out-r{transform:translateX(4%) scale(1.06)}
+.hero2-shade{position:absolute;inset:0;background:linear-gradient(100deg,rgba(8,30,28,.62) 0%,rgba(8,30,28,.28) 55%,rgba(8,30,28,.1) 100%)}
+.hero2-in{position:relative;display:grid;grid-template-columns:1.25fr .75fr;gap:28px;align-items:end;padding:56px 0}
+.glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.34);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);box-shadow:0 20px 60px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.35);border-radius:28px}
+.hero-glass{padding:34px 36px}
+.hero-glass h1{font-size:clamp(2rem,4.6vw,3.3rem);margin:16px 0;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.3)}
+.hero-glass h1 em{font-style:normal;color:#ffd58a}
+.hero-glass .lead{color:rgba(255,255,255,.92);max-width:54ch}
+.hero-glass .hero-stats b{color:#fff}.hero-glass .hero-stats span{color:rgba(255,255,255,.8)}
+.hero-glass .hero-stats{margin-top:22px}
+.pill-g{display:inline-block;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:6px 14px;border-radius:99px;font-weight:600;font-size:.85rem}
+.btn-light{background:#fff;color:#0b4f49}.btn-light:hover{background:#f1fffc}
+.btn-glass{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.5);color:#fff}.btn-glass:hover{background:rgba(255,255,255,.28)}
+.slide-card{padding:18px 20px;display:grid;gap:12px;justify-self:end;width:min(320px,100%)}
+.sc-cap{display:flex;gap:12px;align-items:center}.sc-cap span{font-size:1.8rem}.sc-cap b{display:block;font-family:var(--display);font-size:1.15rem}.sc-cap small{opacity:.85}
+.sc-ctl{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sc-ctl button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.18);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}
+.sc-ctl button:hover{background:rgba(255,255,255,.34)}
+.sc-dots{display:flex;gap:7px}.sc-dots button{width:9px;height:9px;padding:0;border-radius:99px;border:0;background:rgba(255,255,255,.5);transition:width .3s,background .3s}
+.sc-dots button.on{width:26px;background:#fff}
+.sc-hint{opacity:.7;font-size:.72rem}
+@media (max-width:960px){.hero2-in{grid-template-columns:1fr;padding:36px 0}.slide-card{justify-self:stretch;width:auto}.hero-glass{padding:26px 22px}}
+@media (prefers-reduced-motion:reduce){.slide,.slide.on{transition:opacity .3s;transform:none}}
+.hero2{user-select:none;-webkit-user-select:none}.hero2 .lead,.hero2 h1{user-select:text}
