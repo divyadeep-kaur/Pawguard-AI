@@ -56,18 +56,23 @@
         <li><b data-stat="activeCases">–</b><span>cases in progress</span></li>
       </ul>
     </div>
-    <div class="hero-card">
-      <div class="steps">
-        <h2>How it works</h2>
-        <ol>
-          <li><span>1</span><div><b>Snap</b> a clear photo of the animal from a safe distance.</div></li>
-          <li><span>2</span><div><b>Get guidance</b>: species, likely condition, severity and first-aid steps.</div></li>
-          <li><span>3</span><div><b>Report</b> it with location so rescuers can be dispatched.</div></li>
-          <li><span>4</span><div><b>Track</b> the case from <i>Reported</i> to <i>Recovered</i>.</div></li>
-        </ol>
-        <p class="note">PawGuard AI gives guidance, not a veterinary diagnosis. In an emergency, call 1962 or a local vet.</p>
-      </div>
+    <div class="collage" aria-hidden="true">
+      <div class="c-main"><img src="img/pet-buddy.svg" alt=""><span class="float f1">✅ Vaccinated</span></div>
+      <div class="c-sm c1"><img src="img/pet-luna.svg" alt=""></div>
+      <div class="c-sm c2"><img src="img/pet-coco.svg" alt=""></div>
+      <span class="float f3">📍 Ticket PWG-2026-004 · Recovered</span>
     </div>
+  </div>
+</section>
+
+
+<!-- HOW IT WORKS -->
+<section class="how" aria-label="How it works">
+  <div class="wrap how-grid">
+    <div><span>1</span><b>Snap</b><p>Take a clear photo from a safe distance.</p></div>
+    <div><span>2</span><b>Get guidance</b><p>Species, likely condition, severity and first-aid steps.</p></div>
+    <div><span>3</span><b>Report</b><p>Add the location so rescuers can respond.</p></div>
+    <div><span>4</span><b>Track</b><p>Follow the ticket from Reported to Recovered.</p></div>
   </div>
 </section>
 
@@ -169,7 +174,10 @@
             <button class="chip" data-f="open">Open</button>
             <button class="chip" data-f="Recovered">Recovered</button>
           </div>
+          <select id="queue-species" class="mini" aria-label="Filter by animal"><option value="">All animals</option><option>Dog</option><option>Cat</option><option>Cow</option><option>Bird</option><option>Other</option></select>
         </div>
+        <form class="track" id="track-form"><input id="track-in" placeholder="Track a ticket, e.g. PWG-2026-004" aria-label="Ticket number" maxlength="30"><button class="btn btn-ghost btn-sm">Track</button></form>
+        <div id="track-out" aria-live="polite"></div>
         <ul id="queue" class="queue-list"></ul>
       </div>
     </div>

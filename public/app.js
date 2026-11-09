@@ -58,9 +58,9 @@
     return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  // Photo with graceful fallback to an emoji tile (works offline / if the host blocks the image).
-  const photo = (url, fallback, alt) =>
-    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}${url ? `<img src="${esc(url)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()">` : ''}</div>`;
+  // Local illustration is always shown; if a real photo exists at img/photos/<id>.jpg it is layered on top.
+  const photo = (art, fallback, alt, id) =>
+    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}<img src="${esc(art)}" alt="" loading="lazy">${id ? `<img class="ov" src="img/photos/${esc(id)}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
 
   // ---------- nav ----------
   const menuBtn = $('#menu-btn');
@@ -69,6 +69,14 @@
     menuBtn.setAttribute('aria-expanded', open);
   });
   $('#nav-links').addEventListener('click', () => { $('#nav-links').classList.remove('open'); menuBtn.setAttribute('aria-expanded', false); });
+
+  if ('IntersectionObserver' in window) {
+    const links = $$('#nav-links a');
+    const io = new IntersectionObserver((es) => es.forEach((en) => {
+      if (en.isIntersecting) links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    }), { rootMargin: '-45% 0px -50% 0px' });
+    links.forEach((a) => { const t = $(a.getAttribute('href')); if (t) io.observe(t); });
+  }
 
   // ---------- state ----------
   const state = { reports: [], filter: 'all', scan: null, photo: null };
@@ -109,7 +117,8 @@
   // ---------- reports queue ----------
   function renderQueue() {
     const f = state.filter;
-    const rows = state.reports.filter((r) => f === 'all' ? true : f === 'open' ? r.status !== 'Recovered' : r.status === f);
+    const sp = $('#queue-species').value;
+    const rows = state.reports.filter((r) => (f === 'all' ? true : f === 'open' ? r.status !== 'Recovered' : r.status === f) && (!sp || r.animalType === sp));
     $('#queue').innerHTML = rows.length
       ? rows.map((r) => `<li><button class="q-item" data-ticket="${esc(r.ticketNumber)}">
           <span class="q-ico">${emoji(r.animalType)}</span>
@@ -131,6 +140,18 @@
     state.filter = b.dataset.f;
     $$('#queue-filter .chip').forEach((c) => c.classList.toggle('on', c === b));
     renderQueue();
+  });
+  $('#queue-species').addEventListener('change', renderQueue);
+  $('#track-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const q = $('#track-in').value.trim().toUpperCase(), out = $('#track-out');
+    const r = state.reports.find((x) => x.ticketNumber.toUpperCase() === q);
+    if (!q) { out.innerHTML = ''; return; }
+    if (!r) { out.innerHTML = `<p class="error">No ticket found for "${esc(q)}". Check the number and try again.</p>`; return; }
+    const steps = ['Reported', 'Dispatched', 'In-Rescue', 'Recovered'], at = steps.indexOf(r.status);
+    out.innerHTML = `<div class="tl"><div><h4>${emoji(r.animalType)} ${esc(r.ticketNumber)} · ${esc(r.animalType)}</h4><small>${esc(r.healthStatus)} · ${esc(r.location)} · filed ${timeAgo(r.timestamp)}</small></div>
+      <ol>${steps.map((st, i) => `<li class="${i <= at ? 'on' : ''}">${st.replace('-', ' ')}</li>`).join('')}</ol></div>`;
+    focusReport(r.ticketNumber, false);
   });
   $('#queue').addEventListener('click', (e) => {
     const b = e.target.closest('.q-item'); if (b) focusReport(b.dataset.ticket, true);
@@ -289,12 +310,12 @@
 
   // ---------- adoption ----------
   const PETS = [
-    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie retriever mix', age: '11 months', sex: 'Male', img: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=70&w=600', story: 'Found near the Noida bypass with mange and malnutrition. Now athletic, vaccinated and great with kids.' },
-    { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Calico', age: '5 months', sex: 'Female', img: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&q=70&w=600', story: 'Rescued from a stormwater pipe during heavy rain. A tiny chatterbox who loves blanket naps.' },
-    { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Labrador', age: '2 years', sex: 'Female', img: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&q=70&w=600', story: 'Abandoned over an eye allergy that has fully cleared. Obedient, gentle and house-trained.' },
-    { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie pariah', age: '1.5 years', sex: 'Male', img: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=70&w=600', story: 'Rescued from a market after being attacked by other strays. Fully healed, leash-trained and full of energy.' },
+    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie retriever mix', age: '11 months', sex: 'Male', img: 'img/pet-buddy.svg', story: 'Found near the Noida bypass with mange and malnutrition. Now athletic, vaccinated and great with kids.' },
+    { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Calico', age: '5 months', sex: 'Female', img: 'img/pet-luna.svg', story: 'Rescued from a stormwater pipe during heavy rain. A tiny chatterbox who loves blanket naps.' },
+    { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Labrador', age: '2 years', sex: 'Female', img: 'img/pet-coco.svg', story: 'Abandoned over an eye allergy that has fully cleared. Obedient, gentle and house-trained.' },
+    { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie pariah', age: '1.5 years', sex: 'Male', img: 'img/pet-sheru.svg', story: 'Rescued from a market after being attacked by other strays. Fully healed, leash-trained and full of energy.' },
   ];
-  $('#pets').innerHTML = PETS.map((p) => `<article class="card pet">${photo(p.img, emoji(p.type), `${p.name}, ${p.breed}`)}
+  $('#pets').innerHTML = PETS.map((p) => `<article class="card pet">${photo(p.img, emoji(p.type), `${p.name}, ${p.breed}`, p.id)}
       <div class="pet-body"><h3>${p.name}<small>${p.age} · ${p.sex}</small></h3>
       <div class="tags"><span>${p.breed}</span><span>Vaccinated</span><span>Vet-cleared</span></div>
       <p>${p.story}</p><button class="btn btn-primary btn-sm" data-adopt="${p.id}">Adopt ${p.name}</button></div></article>`).join('');
@@ -328,13 +349,12 @@
 
   // ---------- stories ----------
   const STORIES = [
-    { name: 'Rocky, the highway warrior', place: 'Sukhdev Vihar', before: 'https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&q=70&w=500', after: 'https://images.unsplash.com/photo-1534361960057-19889db9621e?auto=format&fit=crop&q=70&w=500', icon: '🐕', text: 'Found on a highway divider with a deep hip wound. After two months of wound therapy he was adopted by a loving family.' },
-    { name: 'Nandi, the free-grazing bull', place: 'Yamuna floodplains', before: 'https://images.unsplash.com/photo-1547496502-affa22d38842?auto=format&fit=crop&q=70&w=500', after: 'https://images.unsplash.com/photo-1527004013197-933c4bb611b3?auto=format&fit=crop&q=70&w=500', icon: '🐂', text: 'A plastic wire had cut deep into his foot. A field surgery team freed him and he now grazes without a limp.' },
-    { name: 'Kiku, the kitten', place: 'Vasant Kunj', before: 'https://images.unsplash.com/photo-1592194996308-7b43878e84a6?auto=format&fit=crop&q=70&w=500', after: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&q=70&w=500', icon: '🐈', text: 'Her eyes were swollen shut with conjunctivitis. Early treatment cured the infection and she now has adopters.' },
+    { id: 'rocky', name: 'Rocky, the highway warrior', place: 'Sukhdev Vihar', icon: '🐕', text: 'Found on a highway divider with a deep hip wound. After two months of wound therapy he was adopted by a loving family.' },
+    { id: 'nandi', name: 'Nandi, the free-grazing bull', place: 'Yamuna floodplains', icon: '🐂', text: 'A plastic wire had cut deep into his foot. A field surgery team freed him and he now grazes without a limp.' },
+    { id: 'kiku', name: 'Kiku, the kitten', place: 'Vasant Kunj', icon: '🐈', text: 'Her eyes were swollen shut with conjunctivitis. Early treatment cured the infection and she now has adopters.' },
   ];
-  $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba">
-      <div class="ph"><span class="lab">Before</span>${s.icon}<img src="${s.before}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div>
-      <div class="ph"><span class="lab">After</span>${s.icon}<img src="${s.after}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div></div>
+  const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span>${s.icon}<img src="img/story-${s.id}-${k}.svg" alt="" loading="lazy"><img class="ov" src="img/photos/${s.id}-${k}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
+  $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba" role="img" aria-label="${esc(s.name)}, before and after rescue">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
       <div class="story-body"><h3>${s.name}</h3><small style="color:var(--muted)">📍 ${s.place}</small><p>${s.text}</p></div></article>`).join('');
 
   // ---------- chat ----------

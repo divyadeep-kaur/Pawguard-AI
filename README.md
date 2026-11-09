@@ -24,6 +24,10 @@ Without a key, the scanner and chatbot run in **demo mode** and say so in the UI
 
 `vercel.json` serves `public/`. Vercel can't run the Python server, so the site detects that `/api` is missing and switches to **demo mode** automatically: seeded sample reports from `public/data/`, with anything a visitor adds saved in their own browser only. For real shared data and live AI, host `backend/app.py` on a Python-capable host (Render, Railway, Fly.io) or port the API to serverless functions plus a database.
 
+## Photos
+
+The site ships with bundled illustrated pet portraits (`public/img/*.svg`, regenerate with `python3 scripts/make_art.py`). To use real photos, drop JPGs into `public/img/photos/` (see the README.txt there); they automatically replace the illustrations.
+
 ## Features
 - **AI scan**: upload or take a photo, get species, likely condition, severity and first-aid steps.
 - **Rescue reports**: validated form with GPS capture; live queue with filters.

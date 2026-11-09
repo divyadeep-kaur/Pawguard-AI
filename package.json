@@ -4,6 +4,7 @@
   "private": true,
   "description": "AI-powered stray animal rescue, health scanning and adoption platform",
   "scripts": {
-    "start": "python3 backend/app.py"
+    "start": "python3 backend/app.py",
+    "build": "echo \"static site, nothing to build\""
   }
 }
