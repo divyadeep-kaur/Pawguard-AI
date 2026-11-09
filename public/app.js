@@ -381,6 +381,11 @@
   $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); const i = $('#chat-input'); const t = i.value.trim(); i.value = ''; send(t); });
   $('#chat-faq').addEventListener('click', (e) => { if (e.target.tagName === 'BUTTON') send(e.target.textContent); });
 
+  // Real photos (optional): img/photos/hero-1.jpg .. hero-3.jpg replace the hero collage illustrations.
+  $$('.collage img').forEach((im, i) => {
+    const t = new Image(); t.onload = () => { im.src = t.src; }; t.src = `img/photos/hero-${i + 1}.jpg`;
+  });
+
   // ---------- boot ----------
   initMap();
   $('#queue').innerHTML = '<li class="skeleton"></li><li class="skeleton"></li><li class="skeleton"></li>';
