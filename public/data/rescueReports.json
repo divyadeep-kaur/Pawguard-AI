@@ -1,0 +1,218 @@
+[
+  {
+    "ticketNumber": "PWG-2026-001",
+    "animalType": "Dog",
+    "breed": "Indie Dog Mix",
+    "healthStatus": "Mange & malnutrition",
+    "severity": "moderate",
+    "description": "Shivering near the metro gate, patchy fur loss.",
+    "location": "Connaught Place, Delhi",
+    "gpsCoordinates": {
+      "lat": 28.62956,
+      "lng": 77.21409
+    },
+    "imageUrl": "",
+    "reporterName": "Chetan Dhawan",
+    "reporterContact": "+91 9881924865",
+    "status": "Recovered",
+    "timestamp": "2026-05-30T09:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-002",
+    "animalType": "Cow",
+    "breed": "Desi Breed",
+    "healthStatus": "Leg fracture",
+    "severity": "critical",
+    "description": "Collapsed beside the road, unable to stand.",
+    "location": "Defence Colony, South Delhi",
+    "gpsCoordinates": {
+      "lat": 28.57206,
+      "lng": 77.22598
+    },
+    "imageUrl": "",
+    "reporterName": "Meera Iyer",
+    "reporterContact": "+91 9838816302",
+    "status": "Recovered",
+    "timestamp": "2026-06-10T12:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-003",
+    "animalType": "Cat",
+    "breed": "Domestic Calico",
+    "healthStatus": "Eye infection",
+    "severity": "low",
+    "description": "Kitten with swollen, crusted eyes under a parked car.",
+    "location": "Noida Sector 62",
+    "gpsCoordinates": {
+      "lat": 28.62677,
+      "lng": 77.36906
+    },
+    "imageUrl": "",
+    "reporterName": "Rohan Gupta",
+    "reporterContact": "+91 9822175294",
+    "status": "Recovered",
+    "timestamp": "2026-06-23T08:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-004",
+    "animalType": "Dog",
+    "breed": "Indie Pariah",
+    "healthStatus": "Deep wound",
+    "severity": "critical",
+    "description": "Bleeding hip wound after a vehicle strike.",
+    "location": "Indirapuram, Ghaziabad",
+    "gpsCoordinates": {
+      "lat": 28.63227,
+      "lng": 77.37372
+    },
+    "imageUrl": "",
+    "reporterName": "Ananya Singh",
+    "reporterContact": "+91 9839962626",
+    "status": "Recovered",
+    "timestamp": "2026-07-10T13:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-005",
+    "animalType": "Bird",
+    "breed": "Black Kite",
+    "healthStatus": "Wing injury",
+    "severity": "moderate",
+    "description": "Grounded kite, cannot fly, caught in kite string.",
+    "location": "Raja Garden, West Delhi",
+    "gpsCoordinates": {
+      "lat": 28.64476,
+      "lng": 77.11859
+    },
+    "imageUrl": "",
+    "reporterName": "Kabir Malhotra",
+    "reporterContact": "+91 9888590039",
+    "status": "Recovered",
+    "timestamp": "2026-07-24T17:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-006",
+    "animalType": "Dog",
+    "breed": "Labrador Mix",
+    "healthStatus": "Tick fever",
+    "severity": "moderate",
+    "description": "Lethargic, pale gums, refusing food.",
+    "location": "Sukhdev Vihar, South Delhi",
+    "gpsCoordinates": {
+      "lat": 28.55677,
+      "lng": 77.28597
+    },
+    "imageUrl": "",
+    "reporterName": "Sana Khan",
+    "reporterContact": "+91 9848870700",
+    "status": "In-Rescue",
+    "timestamp": "2026-08-04T07:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-007",
+    "animalType": "Cat",
+    "breed": "Persian Mix",
+    "healthStatus": "Malnutrition",
+    "severity": "low",
+    "description": "Very thin, begging for food at the market.",
+    "location": "Connaught Place, Delhi",
+    "gpsCoordinates": {
+      "lat": 28.62734,
+      "lng": 77.21617
+    },
+    "imageUrl": "",
+    "reporterName": "Vikram Rao",
+    "reporterContact": "+91 9834256684",
+    "status": "Dispatched",
+    "timestamp": "2026-08-17T09:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-008",
+    "animalType": "Dog",
+    "breed": "Indie Dog Mix",
+    "healthStatus": "Skin allergy",
+    "severity": "low",
+    "description": "Itching constantly, red patches on belly.",
+    "location": "Defence Colony, South Delhi",
+    "gpsCoordinates": {
+      "lat": 28.57251,
+      "lng": 77.22168
+    },
+    "imageUrl": "",
+    "reporterName": "Isha Verma",
+    "reporterContact": "+91 9883517017",
+    "status": "Dispatched",
+    "timestamp": "2026-08-27T16:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-009",
+    "animalType": "Cow",
+    "breed": "Gir Mix",
+    "healthStatus": "Plastic ingestion",
+    "severity": "critical",
+    "description": "Bloated, drooling, chewing a polythene bag.",
+    "location": "Noida Sector 62",
+    "gpsCoordinates": {
+      "lat": 28.62378,
+      "lng": 77.37015
+    },
+    "imageUrl": "",
+    "reporterName": "Chetan Dhawan",
+    "reporterContact": "+91 9881366283",
+    "status": "Dispatched",
+    "timestamp": "2026-09-14T08:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-010",
+    "animalType": "Dog",
+    "breed": "Indie Puppy",
+    "healthStatus": "Parvo symptoms",
+    "severity": "critical",
+    "description": "Puppy vomiting and weak, litter-mates also sick.",
+    "location": "Indirapuram, Ghaziabad",
+    "gpsCoordinates": {
+      "lat": 28.63552,
+      "lng": 77.37659
+    },
+    "imageUrl": "",
+    "reporterName": "Meera Iyer",
+    "reporterContact": "+91 9858530762",
+    "status": "Dispatched",
+    "timestamp": "2026-09-25T19:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-011",
+    "animalType": "Cat",
+    "breed": "Tabby",
+    "healthStatus": "Abscess",
+    "severity": "moderate",
+    "description": "Swollen painful lump near the tail.",
+    "location": "Raja Garden, West Delhi",
+    "gpsCoordinates": {
+      "lat": 28.64569,
+      "lng": 77.12005
+    },
+    "imageUrl": "",
+    "reporterName": "Rohan Gupta",
+    "reporterContact": "+91 9887097845",
+    "status": "Reported",
+    "timestamp": "2026-10-07T10:00:00Z"
+  },
+  {
+    "ticketNumber": "PWG-2026-012",
+    "animalType": "Dog",
+    "breed": "Indie Dog Mix",
+    "healthStatus": "Healthy, needs shelter",
+    "severity": "low",
+    "description": "Friendly stray, needs vaccination and sterilisation.",
+    "location": "Sukhdev Vihar, South Delhi",
+    "gpsCoordinates": {
+      "lat": 28.5634,
+      "lng": 77.28494
+    },
+    "imageUrl": "",
+    "reporterName": "Ananya Singh",
+    "reporterContact": "+91 9848646352",
+    "status": "Reported",
+    "timestamp": "2026-10-20T15:00:00Z"
+  }
+]

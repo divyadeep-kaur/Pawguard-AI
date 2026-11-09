@@ -229,3 +229,5 @@ dialog::backdrop{background:rgba(10,20,22,.55)}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 @media print{.helpline,.nav,.chat,.chat-fab{display:none}}
+
+.demo-banner{background:#fef3c7;color:#78350f;text-align:center;font-size:.82rem;padding:6px 12px;border-bottom:1px solid #fde68a}

@@ -10,7 +10,25 @@
   const emoji = (t) => EMOJI[t] || EMOJI.Other;
   const SEV_COLOR = { critical: '#dc2626', moderate: '#f59e0b', low: '#16a34a' };
 
+  // Use the real API when it is reachable; otherwise fall back to the in-browser demo (see demo-api.js).
+  let mode = 'live';
+  const ready = (async () => {
+    try {
+      const r = await fetch('/api/health');
+      const j = await r.json();
+      if (!(r.ok && j.status === 'ok')) throw new Error('no api');
+    } catch {
+      mode = 'demo';
+      const b = document.createElement('div');
+      b.className = 'demo-banner';
+      b.textContent = 'Demo mode: sample data. Reports and adoption requests you add are saved in this browser only.';
+      document.querySelector('.helpline').after(b);
+    }
+  })();
+
   async function api(path, opts = {}) {
+    await ready;
+    if (mode === 'demo') return window.PawDemo.handle(opts.method || 'GET', path, opts.body || {});
     const res = await fetch('/api' + path, {
       headers: { 'Content-Type': 'application/json' },
       ...opts,
