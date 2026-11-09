@@ -371,7 +371,7 @@
     try {
       const r = await api('/chat', { method: 'POST', body: { messages: history.slice(-10) } });
       wait.textContent = String(r.content).replace(/\*\*/g, ''); history.push({ role: 'assistant', content: r.content });
-    } catch (e) { wait.textContent = 'Sorry, I could not reach the assistant. For emergencies call 1962.'; }
+    } catch (e) { wait.textContent = 'Sorry, I could not reach the assistant. For emergencies call 1962, or email officialdivyadeep@gmail.com.'; }
     log.scrollTop = log.scrollHeight;
   }
   $('#chat-form').addEventListener('submit', (e) => { e.preventDefault(); const i = $('#chat-input'); const t = i.value.trim(); i.value = ''; send(t); });

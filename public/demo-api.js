@@ -43,7 +43,7 @@ window.PawDemo = (() => {
     if (/1962|number|helpline|phone/.test(q)) return 'National animal helpline: 1962 (available in many Indian states). General emergency: 112. For cruelty complaints, contact the Animal Welfare Board of India or a local rescue NGO.';
     if (/fracture|wound|hurt|injur|bleed|wounded/.test(q)) return '1. Press a clean cloth on bleeding wounds.\n2. Keep the animal calm, still and in shade; do not straighten a broken limb.\n3. Call 1962 or a vet. Injured animals can bite from fear, so keep your distance from the head.';
     if (/adopt|process/.test(q)) return 'Open the Adopt section, choose an animal and send a request. The shelter team contacts you to arrange a visit. All animals are vaccinated and vet-cleared.';
-    return 'I can help with first aid for street animals, reporting, and adoption. This is demo mode with a limited set of answers, so for emergencies please call 1962.';
+    return 'I can help with first aid for street animals, reporting, and adoption. This is demo mode with a limited set of answers, so for emergencies please call 1962. For other help, email officialdivyadeep@gmail.com.';
   }
 
   async function handle(method, path, body = {}) {
