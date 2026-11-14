@@ -3,8 +3,8 @@
   --primary:#c2410c; --primary-d:#9a3412; --primary-l:#fde6d6; --forest:#26412c; --accent:#e9b44c;
   --crit:#b91c1c; --mod:#d97706; --low:#3f7d4a; --done:#6b6259;
   --r:10px; --shadow:0 1px 0 rgba(36,26,20,.04),0 2px 10px rgba(36,26,20,.07);
-  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
-  --display:'Barlow Condensed','Arial Narrow','Roboto Condensed',Impact,sans-serif;
+  --font:'Google Sans Flex','Google Sans',Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --display:'Google Sans Flex','Google Sans',Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:84px}
@@ -396,3 +396,14 @@ a{color:var(--primary-d)}
   .ticker-track{animation:none;display:block}.ticker-set{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px}
   .ticker-set[aria-hidden]{display:none}.tk::after{display:none}.tk{padding:0}
 }
+
+/* ===== Google Sans Flex everywhere: friendlier sentence case, sizes retuned for a wider face ===== */
+html,body,button,input,select,textarea{font-family:var(--font)}
+h1,h2,h3,h4{font-family:var(--display);letter-spacing:-.015em;font-weight:700}
+.hero-glass h1{text-transform:none;font-size:clamp(2rem,4.2vw,3.1rem);line-height:1.1;letter-spacing:-.02em}
+.sec-head h2{font-size:clamp(1.8rem,3.4vw,2.5rem);line-height:1.15}
+h3{font-size:1.2rem}.res-top h3{font-size:1.5rem}.story-body h3{font-size:1.2rem}.kpi b,.hero-stats b{font-family:var(--display)}
+.brand{text-transform:none;font-size:1.3rem;letter-spacing:-.01em}
+.btn{text-transform:none;letter-spacing:0;font-size:.95rem;font-weight:600}.btn-sm{font-size:.86rem}
+.pill-g{text-transform:none;letter-spacing:0;font-size:.82rem}
+.foot-contact b{font-size:1rem;letter-spacing:0}.contacts li b{font-size:1.15rem}
