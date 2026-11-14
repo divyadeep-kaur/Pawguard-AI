@@ -360,3 +360,8 @@ a{color:var(--primary-d)}
   .sc-cap small{display:none}.sc-cap span{font-size:1.3rem}.sc-cap b{font-size:1rem}
   .sc-ctl{gap:8px}.sc-ctl button{width:30px;height:30px}.sc-dots{display:none}
 }
+
+.stories{grid-template-columns:repeat(2,1fr)}
+.story-body .tags{margin-bottom:8px}.story-body h3{font-size:1.4rem}
+.ba .ph{aspect-ratio:1/1}
+@media (max-width:700px){.stories{grid-template-columns:1fr}}

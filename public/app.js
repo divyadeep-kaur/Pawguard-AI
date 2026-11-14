@@ -345,13 +345,14 @@
 
   // ---------- stories ----------
   const STORIES = [
-    { id: 'rocky', name: 'Rocky, the highway warrior', place: 'Sukhdev Vihar', icon: '🐕', text: 'Found on a highway divider with a deep hip wound. After two months of wound therapy he was adopted by a loving family.' },
-    { id: 'nandi', name: 'Nandi, the free-grazing bull', place: 'Yamuna floodplains', icon: '🐂', text: 'A plastic wire had cut deep into his foot. A field surgery team freed him and he now grazes without a limp.' },
-    { id: 'kiku', name: 'Kiku, the kitten', place: 'Vasant Kunj', icon: '🐈', text: 'Her eyes were swollen shut with conjunctivitis. Early treatment cured the infection and she now has adopters.' },
+    { id: 'kiku', art: 'kiku', tag: '🐈 Cat', name: 'Street rescue to a safe home', text: 'Tiny kittens found on the street need warmth, milk and a vet check. With fostering and adoption, they grow up safe and loved.' },
+    { id: 'nandi', art: 'nandi', tag: '🐄 Cattle', name: 'Roadside rescue to a safe sanctuary', text: 'Cattle left to scavenge among rubbish can be moved to sanctuaries where they graze freely, are fed properly and get veterinary care.' },
+    { id: 'rocky', art: 'rocky', tag: '🐕 Dog', name: 'From severe skin disease to a happy dog', text: 'Untreated mange and infection can cover a dog in sores. With vet treatment, good food and patience, a full recovery is possible.' },
+    { id: 'pup', art: 'rocky', tag: '🐕 Puppy', name: 'From hairless and weak to playful', text: 'Severe malnutrition and skin infection are treatable. Proper medical care and a loving home can change everything.', posB: '50% 12%', posA: '50% 25%' },
   ];
-  const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span>${s.icon}<img src="img/story-${s.id}-${k}.svg" alt="" loading="lazy"><img class="ov" src="img/photos/${s.id}-${k}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
-  $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba" role="img" aria-label="${esc(s.name)}, before and after rescue">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
-      <div class="story-body"><h3>${s.name}</h3><small style="color:var(--muted)">📍 ${s.place}</small><p>${s.text}</p></div></article>`).join('');
+  const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span><img src="img/story-${s.art}-${k}.svg" alt="" loading="lazy"><img class="ov" ${(k === 'before' ? s.posB : s.posA) ? `style="object-position:${k === 'before' ? s.posB : s.posA}"` : ''} src="img/photos/${s.id}-${k}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
+  $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba" role="img" aria-label="${esc(s.name)}, before and after">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
+      <div class="story-body"><div class="tags"><span>${s.tag}</span></div><h3>${s.name}</h3><p>${s.text}</p></div></article>`).join('');
 
   // ---------- chat ----------
   const chat = $('#chat'), log = $('#chat-log'), history = [];
