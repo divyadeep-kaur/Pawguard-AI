@@ -12,7 +12,7 @@ from src.services.firestore_service import FirestoreService
 from src.services.rescue_service import RescueService
 from src.services.adoption_service import AdoptionService
 from src.services.analytics_service import AnalyticsService
-from src.services.ai_service import AiService
+from src.services.ai_service import get_api_key, AiService
 
 PUBLIC_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "public"))
 MAX_BODY = 8 * 1024 * 1024  # 8 MB, enough for a compressed photo
@@ -71,7 +71,8 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
             self.send_json(200, {
                 "status": "ok", 
                 "engine": "Python http.server Protocol", 
-                "uptime": "active"
+                "uptime": "active",
+                "ai": bool(get_api_key())
             })
             return
             

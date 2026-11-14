@@ -373,3 +373,10 @@ a{color:var(--primary-d)}
 .q-item.fresh{animation:flash 3s ease-out}
 @keyframes flash{0%{background:#fde9c8;border-color:var(--primary)}100%{background:var(--bg)}}
 .adv{margin-top:10px}
+
+.seg5{display:flex;flex-wrap:wrap;gap:8px}.seg5 label{position:relative}.seg5 input{position:absolute;opacity:0;width:1px;height:1px}
+.seg5 span{display:block;padding:8px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font-weight:600;font-size:.9rem;cursor:pointer}
+.seg5 input:checked+span{background:var(--forest);color:#fff;border-color:var(--forest)}.seg5 input:focus-visible+span{outline:3px solid var(--accent)}
+.chk{display:grid;gap:6px}.chk label{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;font-size:.92rem}
+.chk input{width:auto;margin-top:3px;accent-color:var(--primary)}.chk label:has(input:checked){border-color:var(--primary);background:var(--primary-l)}
+.res-sec h4 small{text-transform:none;letter-spacing:0;font-weight:400}

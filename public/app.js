@@ -11,12 +11,13 @@
   const SEV_COLOR = { critical: '#dc2626', moderate: '#f59e0b', low: '#16a34a' };
 
   // Use the real API when it is reachable; otherwise fall back to the in-browser demo (see demo-api.js).
-  let mode = 'live';
+  let mode = 'live', aiOn = false;
   const ready = (async () => {
     try {
       const r = await fetch('/api/health');
       const j = await r.json();
       if (!(r.ok && j.status === 'ok')) throw new Error('no api');
+      aiOn = !!j.ai;
     } catch {
       mode = 'demo';
     }
@@ -267,14 +268,100 @@
     $('#result-body').hidden = true; $('#result-empty').hidden = false;
   });
 
+  // ---------- real scan: on-device species detection + symptom checklist ----------
+  // 1) TensorFlow.js COCO-SSD runs in the browser and finds dogs/cats/cows/birds in the photo (no key, photo never leaves the device).
+  // 2) The user ticks what they can see; first-aid guidance and urgency come from the rules below.
+  // If a real Gemini key is configured on the backend, that analysis is used instead.
+  const SPECIES = { dog: 'Dog', cat: 'Cat', cow: 'Cow', bird: 'Bird', horse: 'Other', sheep: 'Other', bear: 'Other' };
+  const loadScript = (src) => new Promise((ok, bad) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => bad(new Error('load failed')); document.head.appendChild(s); });
+  let detectorP = null;
+  function getDetector() {
+    if (!detectorP) detectorP = (async () => {
+      if (!window.cocoSsd) {
+        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');
+      }
+      return window.cocoSsd.load({ base: 'lite_mobilenet_v2' });
+    })().catch((e) => { detectorP = null; throw e; });
+    return detectorP;
+  }
+  const withTimeout = (p, ms) => Promise.race([p, new Promise((_, no) => setTimeout(() => no(new Error('timeout')), ms))]);
+  async function detectAnimal() {
+    const model = await withTimeout(getDetector(), 25000);
+    const preds = await model.detect($('#preview'), 10, 0.25);
+    const animals = preds.filter((p) => SPECIES[p.class]).sort((x, y) => y.score - x.score);
+    return animals[0] ? { type: SPECIES[animals[0].class], raw: animals[0].class, score: animals[0].score } : null;
+  }
+  $('#file').addEventListener('change', () => { getDetector().catch(() => {}); }); // warm up the model while the user looks at the photo
+
+  const SAFETY = {
+    Dog: 'Approach slowly from the side and avoid the head; frightened dogs can bite. Use a lead or cloth loop only if it is calm.',
+    Cat: 'Do not chase. Place a towel or box next to the cat and let it come in; use thick gloves, as frightened cats scratch and bite.',
+    Cow: 'Keep clear of the horns and back legs. Do not corner the animal, and keep traffic and crowds away.',
+    Bird: 'Cover it gently with a cloth, place it in a ventilated box in a dark, quiet spot, and do not give food or water.',
+    Other: 'Keep a safe distance and avoid the head and hooves or claws. Do not feed it until a vet has seen it.',
+  };
+  const CONDS = {
+    bleeding: { label: 'Bleeding or an open wound', sev: 'critical', steps: ['Press a clean cloth firmly on the wound and add more on top if it soaks through. Do not remove the first layer.', 'Do not put powders, turmeric or home remedies on a deep wound.'] },
+    cantstand: { label: 'Cannot stand or walk, or dragging a limb', sev: 'critical', steps: ['Do not force it to stand; a broken limb can get worse.', 'Move it only if it is in traffic, using a blanket or board as a stretcher and keeping its back straight.'] },
+    vehicle: { label: 'Hit by a vehicle or fell from a height', sev: 'critical', steps: ['Keep it still and warm; internal injuries are possible even if it looks fine.', 'Give no food or water until a vet has checked it.'] },
+    plastic: { label: 'Bloated belly, drooling or chewing plastic', sev: 'critical', steps: ['Never pull plastic or string out of the mouth.', 'Keep it calm and call a vet or 1962 straight away.'] },
+    heat: { label: 'Panting heavily or overheated', sev: 'moderate', steps: ['Move it into shade and offer small sips of cool water.', 'Wet the paws and belly with cool (not ice-cold) water.'] },
+    thin: { label: 'Very thin or weak', sev: 'moderate', steps: ['Offer fresh water first, then small portions of plain food such as boiled rice or egg for dogs and cats.', 'Keep it warm and let it rest.'] },
+    skin: { label: 'Skin sores, hair loss or constant itching', sev: 'moderate', steps: ['Avoid touching bare skin without gloves; mange and fungal infections can spread.', 'Keep it apart from other animals and arrange a vet visit for treatment.'] },
+    vomit: { label: 'Vomiting or diarrhoea', sev: 'moderate', steps: ['Offer small sips of water and hold food for a few hours.', 'Puppies and kittens get worse quickly, so see a vet soon.'] },
+    tangled: { label: 'Tangled in string, wire or a net', sev: 'moderate', steps: ['Stay calm and avoid sudden moves that tighten it.', 'Cut the string away only if you can do it safely with blunt scissors; otherwise wait for rescuers.'] },
+    eye: { label: 'Eye or nose discharge', sev: 'low', steps: ['Wipe gently with a clean cotton pad and warm water.', 'A vet can prescribe drops; this is usually very treatable.'] },
+    healthy: { label: 'Looks healthy but needs food, water or shelter', sev: 'low', steps: ['Offer fresh water and a shaded, safe resting place.', 'Report it so a volunteer can arrange vaccination, sterilisation or adoption.'] },
+  };
+  const RANK = { low: 0, moderate: 1, critical: 2 };
+  const ACTION = {
+    critical: 'Call 1962 or the nearest vet right away, then file a rescue report so rescuers can find the animal.',
+    moderate: 'File a rescue report today and arrange a vet visit within 24 hours.',
+    low: 'File a report so a volunteer can follow up, and keep fresh water nearby.',
+  };
+
+  function buildGuidance(type, picked, how) {
+    const chosen = picked.map((k) => CONDS[k]);
+    const sev = chosen.reduce((m, c) => (RANK[c.sev] > RANK[m] ? c.sev : m), 'low');
+    const steps = [...new Set([SAFETY[type] || SAFETY.Other, ...chosen.flatMap((c) => c.steps)])];
+    if (!chosen.length) steps.push('Offer fresh water and watch for changes. If anything worsens, file a report.');
+    return { demo: false, source: how, data: { animalType: type, breed: how, healthDetected: chosen.length ? chosen.map((c) => c.label).join('; ') : 'No problems reported', severity: sev,
+      emergencyAlert: sev === 'critical', firstAid: steps, suggestedAction: ACTION[sev] } };
+  }
+
+  function renderChecklist(det, note) {
+    $('#result-empty').hidden = true;
+    const body = $('#result-body'); body.hidden = false;
+    const types = ['Dog', 'Cat', 'Cow', 'Bird', 'Other'], cur = det ? det.type : 'Dog';
+    body.innerHTML = `
+      ${note ? `<div class="demo-tag">${esc(note)}</div>` : ''}
+      <div class="res-sec"><h4>1. Animal</h4>
+        <div class="seg5" id="sp-pick">${types.map((t) => `<label><input type="radio" name="sp" value="${t}" ${t === cur ? 'checked' : ''}><span>${emoji(t)} ${t}</span></label>`).join('')}</div>
+        ${det ? `<p class="hint">Detected on your device: <b>${esc(det.type)}</b> (${Math.round(det.score * 100)}% match). Change it if that's wrong.</p>` : ''}</div>
+      <div class="res-sec"><h4>2. What can you see? <small>(tick all that apply)</small></h4>
+        <div class="chk" id="cond-pick">${Object.entries(CONDS).map(([k, c]) => `<label><input type="checkbox" value="${k}"><span>${esc(c.label)}</span></label>`).join('')}</div></div>
+      <div class="res-actions"><button class="btn btn-primary" id="get-guide">Get first-aid guidance</button></div>`;
+    $('#get-guide').addEventListener('click', () => {
+      const type = $('input[name=sp]:checked').value, picked = $$('#cond-pick input:checked').map((i) => i.value);
+      const how = det && det.type === type ? `Species detected on your device (${Math.round(det.score * 100)}% match); condition reported by you` : 'Species and condition reported by you';
+      state.scan = buildGuidance(type, picked, how); renderScan(state.scan);
+    });
+  }
+
   $('#scan-btn').addEventListener('click', async () => {
     const btn = $('#scan-btn');
     btn.disabled = true; btn.textContent = 'Analysing…'; $('#scanline').hidden = false;
     try {
-      const res = await api('/scan-animal', { method: 'POST', body: { imageBase64: state.photo } });
-      state.scan = res; renderScan(res);
-    } catch (e) { toast('Scan failed: ' + e.message); }
-    finally { btn.disabled = false; btn.textContent = 'Analyse photo'; $('#scanline').hidden = true; }
+      // a real Gemini analysis (backend with API key) wins; sample/demo responses are ignored
+      let real = null;
+      if (mode === 'live' && aiOn) { try { const r = await api('/scan-animal', { method: 'POST', body: { imageBase64: state.photo } }); if (r && r.demo === false) real = r; } catch { /* fall through */ } }
+      if (real) { state.scan = real; renderScan(real); return; }
+      let det = null, note = '';
+      try { det = await detectAnimal(); if (!det) note = 'No dog, cat, cow or bird was found in this photo. Please check the photo, or choose the animal yourself below.'; }
+      catch { note = 'Automatic detection is not available right now (it needs an internet connection). Please choose the animal yourself.'; }
+      renderChecklist(det, note);
+    } finally { btn.disabled = false; btn.textContent = 'Analyse photo'; $('#scanline').hidden = true; }
   });
 
   function renderScan({ data: d, source, demo }) {
@@ -285,7 +372,7 @@
       <div class="res-top"><div><h3>${emoji(d.animalType)} ${esc(d.animalType)}</h3><small>${esc(d.breed)}</small></div>
         <span class="badge b-${esc(d.severity)}">${esc(d.severity)}</span></div>
       ${d.emergencyAlert ? '<div class="alert">🚨 Possible emergency. Call <a href="tel:1962">1962</a> now and keep the animal still and calm.</div>' : ''}
-      <div class="res-sec"><h4>Likely condition</h4><div>${esc(d.healthDetected)}</div></div>
+      <div class="res-sec"><h4>Condition</h4><div>${esc(d.healthDetected)}</div></div>
       <div class="res-sec"><h4>First aid</h4><ol>${(d.firstAid || []).map((s) => `<li>${esc(s)}</li>`).join('')}</ol></div>
       <div class="res-sec"><h4>Recommended action</h4><div>${esc(d.suggestedAction)}</div></div>
       ${!demo ? `<p class="hint">Source: ${esc(source)}. Guidance only, not a vet diagnosis.</p>` : '<p class="hint">Guidance only, not a vet diagnosis.</p>'}

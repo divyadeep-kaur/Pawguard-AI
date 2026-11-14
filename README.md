@@ -18,7 +18,7 @@ export GEMINI_API_KEY="your-key"     # optional: GEMINI_MODEL (default gemini-2.
 python3 backend/app.py
 ```
 
-Without a key, the scanner and chatbot run in **demo mode** and say so in the UI. Scanner results in demo mode are samples, not analysis of your photo.
+Without a key, the chatbot answers from a small built-in set of replies. The scanner never returns random results: it detects the animal on-device and builds guidance from what the user reports.
 
 ## Deploy on Vercel (or any static host)
 
@@ -33,7 +33,7 @@ The site ships with bundled illustrated pet portraits (`public/img/*.svg`, regen
 The queue, map markers and dashboard refresh automatically (every ~8 s while the tab is visible, instantly on tab focus). New reports and status changes flash in the queue with a toast, and a "Live" badge shows when it last synced. In demo mode (static hosting) updates sync instantly across tabs of the same browser; sharing live data between different visitors requires the Python backend or a hosted database.
 
 ## Features
-- **AI scan**: upload or take a photo, get species, likely condition, severity and first-aid steps.
+- **Scan**: upload or take a photo. TensorFlow.js (COCO-SSD) detects the animal on the user's device, the user ticks what they can see, and rule-based first-aid guidance and urgency are generated. Photos with no animal are rejected. With a Gemini key on the backend, Gemini's analysis is used instead.
 - **Rescue reports**: validated form with GPS capture; live queue with filters.
 - **Live map**: Leaflet map coloured by urgency, linked with the queue.
 - **Impact dashboard**: all figures computed from stored reports.
