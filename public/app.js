@@ -307,7 +307,7 @@
   // ---------- adoption ----------
   const PETS = [
     { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie retriever mix', age: '11 months', sex: 'Male', img: 'img/pet-buddy.svg', story: 'Found near the Noida bypass with mange and malnutrition. Now athletic, vaccinated and great with kids.' },
-    { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Calico', age: '5 months', sex: 'Female', img: 'img/pet-luna.svg', story: 'Rescued from a stormwater pipe during heavy rain. A tiny chatterbox who loves blanket naps.' },
+    { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Orange tabby', age: '2 years', sex: 'Female', img: 'img/pet-luna.svg', story: 'Found thin on a city rooftop and nursed back to health. Calm, curious and happiest in a warm, sunny spot.' },
     { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Labrador', age: '2 years', sex: 'Female', img: 'img/pet-coco.svg', story: 'Abandoned over an eye allergy that has fully cleared. Obedient, gentle and house-trained.' },
     { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie pariah', age: '1.5 years', sex: 'Male', img: 'img/pet-sheru.svg', story: 'Rescued from a market after being attacked by other strays. Fully healed, leash-trained and full of energy.' },
   ];
@@ -379,18 +379,19 @@
 
   // ---------- hero slideshow ----------
   const HERO = [
-    { art: 'img/pet-buddy.svg', photo: 'img/photos/hero-1.jpg', emoji: '🐶', name: 'Buddy', sub: 'Rescued, vaccinated, adopted' },
-    { art: 'img/pet-luna.svg', photo: 'img/photos/hero-2.jpg', emoji: '🐱', name: 'Luna', sub: 'Found in a stormwater pipe, now safe' },
-    { art: 'img/story-rocky-after.svg', photo: 'img/photos/hero-3.jpg', emoji: '🐕', name: 'Rocky', sub: 'From a highway divider to a loving home' },
-    { art: 'img/pet-sheru.svg', photo: 'img/photos/hero-4.jpg', emoji: '🐕', name: 'Sheru', sub: 'Healed and ready for adoption' },
-    { art: 'img/story-kiku-after.svg', photo: 'img/photos/hero-5.jpg', emoji: '🐈', name: 'Kiku', sub: 'Cured of eye infection, now adopted' },
+    { art: 'img/pet-buddy.svg', photo: 'img/photos/hero-1.jpg', emoji: '🐕', name: 'First aid saves lives', sub: 'A clean bandage and a calm, gentle hand' },
+    { art: 'img/pet-luna.svg', photo: 'img/photos/hero-2.jpg', emoji: '🐈', name: 'Rooftop strays', sub: 'City cats need food, water and vaccines' },
+    { art: 'img/story-nandi-after.svg', photo: 'img/photos/hero-3.jpg', emoji: '🐄', name: 'Cattle in need', sub: 'Injured and abandoned cows can be helped too' },
+    { art: 'img/story-rocky-after.svg', photo: 'img/photos/hero-4.jpg', emoji: '🐂', name: 'Street cattle', sub: 'Traffic and plastic are their biggest dangers' },
+    { art: 'img/pet-sheru.svg', photo: 'img/photos/hero-5.jpg', emoji: '🐾', name: 'Paw care', sub: 'Gloves, patience and proper treatment' },
+    { art: 'img/story-kiku-after.svg', photo: 'img/photos/hero-6.jpg', emoji: '🐈', name: 'A stray calling out', sub: 'Hungry strays often come to people for help', pos: '50% 30%' },
   ];
   (function heroSlider() {
     const wrap = $('#slides'), dots = $('#sc-dots'), hero = $('#top');
     let i = 0, timer = null, x0 = null, moved = false;
     HERO.forEach((h, n) => {
       const d = document.createElement('div'); d.className = 'slide'; d.style.backgroundImage = `url(${h.art})`; wrap.appendChild(d);
-      const t = new Image(); t.onload = () => { d.style.backgroundImage = `url(${h.photo})`; }; t.src = h.photo; // real photo replaces art if present
+      const t = new Image(); d.style.backgroundPosition = h.pos || 'center'; t.onload = () => { d.style.backgroundImage = `url(${h.photo})`; }; t.src = h.photo; // real photo replaces art if present
       const b = document.createElement('button'); b.setAttribute('aria-label', `Photo ${n + 1} of ${HERO.length}`); b.onclick = () => { go(n); restart(); }; dots.appendChild(b);
     });
     const slides = [...wrap.children], dotEls = [...dots.children];
