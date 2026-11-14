@@ -55,8 +55,8 @@
   };
 
   // Local illustration is always shown; if a real photo exists at img/photos/<id>.jpg it is layered on top.
-  const photo = (art, fallback, alt, id) =>
-    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}<img src="${esc(art)}" alt="" loading="lazy">${id ? `<img class="ov" src="img/photos/${esc(id)}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
+  const photo = (art, fallback, alt, id, pos) =>
+    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}<img src="${esc(art)}" alt="" loading="lazy">${id ? `<img class="ov" ${pos ? `style="object-position:${esc(pos)}"` : ''} src="img/photos/${esc(id)}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
 
   // ---------- nav ----------
   const menuBtn = $('#menu-btn');
@@ -306,12 +306,12 @@
 
   // ---------- adoption ----------
   const PETS = [
-    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie mix', age: '11 months', sex: 'Male', tags: ['Vaccinated', 'Recovering'], img: 'img/pet-buddy.svg', story: 'Found on the roadside with a head wound. Gentle and calm with the vet team, and ready for a home once his bandage comes off.' },
+    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie mix', age: '2 years', sex: 'Male', img: 'img/pet-buddy.svg', story: 'Found wandering near a market, watchful and gentle. Now vaccinated, vet-cleared and settling in well, a good match for a quiet home.' },
     { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Orange tabby', age: '2 years', sex: 'Female', img: 'img/pet-luna.svg', story: 'Found thin on a city rooftop and nursed back to health. Calm, curious and happiest in a warm, sunny spot.' },
-    { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Labrador', age: '2 years', sex: 'Female', img: 'img/pet-coco.svg', story: 'Abandoned over an eye allergy that has fully cleared. Obedient, gentle and house-trained.' },
+    { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Indie', age: '3 years', sex: 'Female', pos: '50% 12%', img: 'img/pet-coco.svg', story: 'Fed by shopkeepers outside a roadside workshop. Cheerful, people-friendly and ready to be someone\'s companion.' },
     { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie mix', age: '1.5 years', sex: 'Male', tags: ['Vaccinated', 'Recovering'], img: 'img/pet-sheru.svg', story: 'Treated for a paw injury and mending well. Patient, friendly and used to being handled, so a good match for a first-time adopter.' },
   ];
-  $('#pets').innerHTML = PETS.map((p) => `<article class="card pet">${photo(p.img, emoji(p.type), `${p.name}, ${p.breed}`, p.id)}
+  $('#pets').innerHTML = PETS.map((p) => `<article class="card pet">${photo(p.img, emoji(p.type), `${p.name}, ${p.breed}`, p.id, p.pos)}
       <div class="pet-body"><h3>${p.name}<small>${p.age} · ${p.sex}</small></h3>
       <div class="tags"><span>${p.breed}</span>${(p.tags || ['Vaccinated', 'Vet-cleared']).map((t) => `<span>${t}</span>`).join('')}</div>
       <p>${p.story}</p><button class="btn btn-primary btn-sm" data-adopt="${p.id}">Adopt ${p.name}</button></div></article>`).join('');
