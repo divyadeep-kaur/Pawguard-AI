@@ -380,18 +380,18 @@
   // ---------- hero slideshow ----------
   const HERO = [
     { art: 'img/pet-buddy.svg', photo: 'img/photos/hero-1.jpg', emoji: '🐕', name: 'First aid saves lives', sub: 'A clean bandage and a calm, gentle hand' },
-    { art: 'img/pet-luna.svg', photo: 'img/photos/hero-2.jpg', emoji: '🐈', name: 'Rooftop strays', sub: 'City cats need food, water and vaccines' },
+    { art: 'img/pet-luna.svg', photo: 'img/photos/hero-2.jpg', flip: true, emoji: '🐈', name: 'Rooftop strays', sub: 'City cats need food, water and vaccines' },
     { art: 'img/story-nandi-after.svg', photo: 'img/photos/hero-3.jpg', emoji: '🐄', name: 'Cattle in need', sub: 'Injured and abandoned cows can be helped too' },
-    { art: 'img/story-rocky-after.svg', photo: 'img/photos/hero-4.jpg', emoji: '🐂', name: 'Street cattle', sub: 'Traffic and plastic are their biggest dangers' },
+    { art: 'img/story-rocky-after.svg', photo: 'img/photos/hero-4.jpg', pos: '50% 55%', emoji: '🐂', name: 'Street cattle', sub: 'Traffic and plastic are their biggest dangers' },
     { art: 'img/pet-sheru.svg', photo: 'img/photos/hero-5.jpg', emoji: '🐾', name: 'Paw care', sub: 'Gloves, patience and proper treatment' },
-    { art: 'img/story-kiku-after.svg', photo: 'img/photos/hero-6.jpg', emoji: '🐈', name: 'A stray calling out', sub: 'Hungry strays often come to people for help', pos: '50% 30%' },
+    { art: 'img/story-kiku-after.svg', photo: 'img/photos/hero-6.jpg', emoji: '🐈', name: 'A stray calling out', sub: 'Hungry strays often come to people for help', pos: '50% 30%', flip: true },
   ];
   (function heroSlider() {
     const wrap = $('#slides'), dots = $('#sc-dots'), hero = $('#top');
     let i = 0, timer = null, x0 = null, moved = false;
     HERO.forEach((h, n) => {
       const d = document.createElement('div'); d.className = 'slide'; d.style.backgroundImage = `url(${h.art})`; wrap.appendChild(d);
-      const t = new Image(); d.style.backgroundPosition = h.pos || 'center'; t.onload = () => { d.style.backgroundImage = `url(${h.photo})`; }; t.src = h.photo; // real photo replaces art if present
+      const t = new Image(); d.style.backgroundPosition = h.pos || 'center'; if (h.flip) d.style.transform = 'scaleX(-1)'; t.onload = () => { d.style.backgroundImage = `url(${h.photo})`; }; t.src = h.photo; // real photo replaces art if present
       const b = document.createElement('button'); b.setAttribute('aria-label', `Photo ${n + 1} of ${HERO.length}`); b.onclick = () => { go(n); restart(); }; dots.appendChild(b);
     });
     const slides = [...wrap.children], dotEls = [...dots.children];
