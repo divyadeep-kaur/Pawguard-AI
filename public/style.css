@@ -380,3 +380,19 @@ a{color:var(--primary-d)}
 .chk{display:grid;gap:6px}.chk label{display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);cursor:pointer;font-size:.92rem}
 .chk input{width:auto;margin-top:3px;accent-color:var(--primary)}.chk label:has(input:checked){border-color:var(--primary);background:var(--primary-l)}
 .res-sec h4 small{text-transform:none;letter-spacing:0;font-weight:400}
+
+/* ===== Scrolling helpline ticker ===== */
+.helpline{display:block;padding:0;overflow:hidden;text-align:left}
+.ticker{overflow:hidden;white-space:nowrap;padding:8px 0}
+.ticker-track{display:inline-flex;animation:tick 55s linear infinite;will-change:transform}
+.ticker-set{display:inline-flex;flex:none}
+.tk{display:inline-flex;align-items:center;gap:8px;padding:0 34px;position:relative}
+.tk::after{content:"•";position:absolute;right:-3px;opacity:.6}
+.tk a:not(.hl-num){text-decoration:underline}
+.ticker:hover .ticker-track,.ticker:focus-within .ticker-track{animation-play-state:paused}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){
+  .ticker{white-space:normal;text-align:center;padding:8px 12px}
+  .ticker-track{animation:none;display:block}.ticker-set{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 16px}
+  .ticker-set[aria-hidden]{display:none}.tk::after{display:none}.tk{padding:0}
+}
