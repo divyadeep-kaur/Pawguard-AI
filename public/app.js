@@ -306,14 +306,14 @@
 
   // ---------- adoption ----------
   const PETS = [
-    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie retriever mix', age: '11 months', sex: 'Male', img: 'img/pet-buddy.svg', story: 'Found near the Noida bypass with mange and malnutrition. Now athletic, vaccinated and great with kids.' },
+    { id: 'pet-1', name: 'Buddy', type: 'Dog', breed: 'Indie mix', age: '11 months', sex: 'Male', tags: ['Vaccinated', 'Recovering'], img: 'img/pet-buddy.svg', story: 'Found on the roadside with a head wound. Gentle and calm with the vet team, and ready for a home once his bandage comes off.' },
     { id: 'pet-2', name: 'Luna', type: 'Cat', breed: 'Orange tabby', age: '2 years', sex: 'Female', img: 'img/pet-luna.svg', story: 'Found thin on a city rooftop and nursed back to health. Calm, curious and happiest in a warm, sunny spot.' },
     { id: 'pet-3', name: 'Coco', type: 'Dog', breed: 'Labrador', age: '2 years', sex: 'Female', img: 'img/pet-coco.svg', story: 'Abandoned over an eye allergy that has fully cleared. Obedient, gentle and house-trained.' },
-    { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie pariah', age: '1.5 years', sex: 'Male', img: 'img/pet-sheru.svg', story: 'Rescued from a market after being attacked by other strays. Fully healed, leash-trained and full of energy.' },
+    { id: 'pet-4', name: 'Sheru', type: 'Dog', breed: 'Indie mix', age: '1.5 years', sex: 'Male', tags: ['Vaccinated', 'Recovering'], img: 'img/pet-sheru.svg', story: 'Treated for a paw injury and mending well. Patient, friendly and used to being handled, so a good match for a first-time adopter.' },
   ];
   $('#pets').innerHTML = PETS.map((p) => `<article class="card pet">${photo(p.img, emoji(p.type), `${p.name}, ${p.breed}`, p.id)}
       <div class="pet-body"><h3>${p.name}<small>${p.age} · ${p.sex}</small></h3>
-      <div class="tags"><span>${p.breed}</span><span>Vaccinated</span><span>Vet-cleared</span></div>
+      <div class="tags"><span>${p.breed}</span>${(p.tags || ['Vaccinated', 'Vet-cleared']).map((t) => `<span>${t}</span>`).join('')}</div>
       <p>${p.story}</p><button class="btn btn-primary btn-sm" data-adopt="${p.id}">Adopt ${p.name}</button></div></article>`).join('');
 
   const dlg = $('#adopt-dialog'); let petSel = null;
