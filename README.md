@@ -28,6 +28,10 @@ Without a key, the scanner and chatbot run in **demo mode** and say so in the UI
 
 The site ships with bundled illustrated pet portraits (`public/img/*.svg`, regenerate with `python3 scripts/make_art.py`). To use real photos, drop JPGs into `public/img/photos/` (see the README.txt there); they automatically replace the illustrations.
 
+## Live updates
+
+The queue, map markers and dashboard refresh automatically (every ~8 s while the tab is visible, instantly on tab focus). New reports and status changes flash in the queue with a toast, and a "Live" badge shows when it last synced. In demo mode (static hosting) updates sync instantly across tabs of the same browser; sharing live data between different visitors requires the Python backend or a hosted database.
+
 ## Features
 - **AI scan**: upload or take a photo, get species, likely condition, severity and first-aid steps.
 - **Rescue reports**: validated form with GPS capture; live queue with filters.

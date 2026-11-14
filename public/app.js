@@ -116,7 +116,7 @@
     const sp = $('#queue-species').value;
     const rows = state.reports.filter((r) => (f === 'all' ? true : f === 'open' ? r.status !== 'Recovered' : r.status === f) && (!sp || r.animalType === sp));
     $('#queue').innerHTML = rows.length
-      ? rows.map((r) => `<li><button class="q-item" data-ticket="${esc(r.ticketNumber)}">
+      ? rows.map((r) => `<li><button class="q-item${state.fresh && state.fresh.has(r.ticketNumber) ? ' fresh' : ''}" data-ticket="${esc(r.ticketNumber)}">
           <span class="q-ico">${emoji(r.animalType)}</span>
           <span class="q-main"><b>${esc(r.animalType)} · ${esc(r.healthStatus)}</b><span>${esc(r.location)} · ${timeAgo(r.timestamp)}</span></span>
           <span class="q-meta"><span class="badge b-${esc(r.status)}">${esc(r.status)}</span><span class="q-ticket">${esc(r.ticketNumber)}</span></span>
@@ -126,10 +126,40 @@
     drawMarkers();
   }
 
-  async function loadReports() {
-    try { state.reports = await api('/rescue-reports'); } catch (e) { toast('Could not load reports: ' + e.message); }
-    renderQueue();
+  // ----- live sync: polls the API (or watches other tabs in demo mode) and animates what changed -----
+  const known = new Map(); let lastSync = 0, firstSync = true, syncing = false;
+  async function sync(silent = false) {
+    if (syncing) return; syncing = true;
+    try {
+      const rs = await api('/rescue-reports');
+      const changed = [];
+      rs.forEach((r) => {
+        const prev = known.get(r.ticketNumber);
+        if (!firstSync && prev === undefined) changed.push([r, `New report: ${r.animalType}, ${r.location}`]);
+        else if (!firstSync && prev !== r.status) changed.push([r, `${r.ticketNumber} is now ${r.status}`]);
+        known.set(r.ticketNumber, r.status);
+      });
+      state.reports = rs; state.fresh = new Set(changed.map(([r]) => r.ticketNumber));
+      renderQueue(); loadAnalytics();
+      if (!silent && changed.length) toast(changed.length === 1 ? changed[0][1] : `${changed.length} live updates`);
+      setTimeout(() => { state.fresh = new Set(); }, 3200);
+      firstSync = false; lastSync = Date.now(); paintLive(true);
+    } catch (e) { paintLive(false); if (firstSync) toast('Could not load reports: ' + e.message); }
+    finally { syncing = false; }
   }
+  const loadReports = sync;
+  function paintLive(ok = true) {
+    const secs = Math.max(0, Math.round((Date.now() - lastSync) / 1000));
+    $$('[data-live]').forEach((el) => {
+      el.classList.toggle('off', !ok);
+      $('.live-text', el).textContent = !ok ? 'Reconnecting…' : secs < 5 ? 'Live · just now' : `Live · ${secs}s ago`;
+    });
+  }
+  setInterval(() => { if (document.visibilityState === 'visible') { Date.now() - lastSync > 8000 && sync(); } paintLive(true); renderTimes(); }, 1000);
+  document.addEventListener('visibilitychange', () => document.visibilityState === 'visible' && sync());
+  window.addEventListener('storage', (e) => { if (e.key === 'pawguard.demo.v1') sync(); }); // another tab changed demo data
+  let lastTimes = 0;
+  function renderTimes() { if (Date.now() - lastTimes > 30000) { lastTimes = Date.now(); renderQueue(); } }
 
   $('#queue-filter').addEventListener('click', (e) => {
     const b = e.target.closest('.chip'); if (!b) return;
@@ -138,6 +168,11 @@
     renderQueue();
   });
   $('#queue-species').addEventListener('change', renderQueue);
+  $('#track-out').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-adv]'); if (!b) return;
+    await api('/rescue-reports/' + encodeURIComponent(b.dataset.adv), { method: 'PUT', body: { status: b.dataset.next } });
+    await sync(); $('#track-form').requestSubmit();   // refresh timeline + queue + map + dashboard
+  });
   $('#track-form').addEventListener('submit', (e) => {
     e.preventDefault();
     const q = $('#track-in').value.trim().toUpperCase(), out = $('#track-out');
@@ -146,7 +181,8 @@
     if (!r) { out.innerHTML = `<p class="error">No ticket found for "${esc(q)}". Check the number and try again.</p>`; return; }
     const steps = ['Reported', 'Dispatched', 'In-Rescue', 'Recovered'], at = steps.indexOf(r.status);
     out.innerHTML = `<div class="tl"><div><h4>${emoji(r.animalType)} ${esc(r.ticketNumber)} · ${esc(r.animalType)}</h4><small>${esc(r.healthStatus)} · ${esc(r.location)} · filed ${timeAgo(r.timestamp)}</small></div>
-      <ol>${steps.map((st, i) => `<li class="${i <= at ? 'on' : ''}">${st.replace('-', ' ')}</li>`).join('')}</ol></div>`;
+      <ol>${steps.map((st, i) => `<li class="${i <= at ? 'on' : ''}">${st.replace('-', ' ')}</li>`).join('')}</ol>
+      ${mode === 'demo' && at < 3 ? `<button class="btn btn-ghost btn-sm adv" data-adv="${esc(r.ticketNumber)}" data-next="${steps[at + 1]}">Demo: move to “${steps[at + 1].replace('-', ' ')}” →</button>` : ''}</div>`;
     focusReport(r.ticketNumber, false);
   });
   $('#queue').addEventListener('click', (e) => {
@@ -298,7 +334,7 @@
       const r = await api('/rescue-reports', { method: 'POST', body });
       toast(`Report filed: ticket ${r.ticketNumber}`);
       e.target.reset(); state.gps = undefined; $('#gps-note').textContent = '';
-      await Promise.all([loadReports(), loadAnalytics()]);
+      await sync(true);
       focusReport(r.ticketNumber, false);
     } catch (ex) { err.textContent = ex.message; err.hidden = false; }
     finally { btn.disabled = false; btn.textContent = 'Submit rescue report'; }

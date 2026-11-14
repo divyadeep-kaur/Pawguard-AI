@@ -7,7 +7,11 @@ window.PawDemo = (() => {
   const save = (s) => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {} };
   let seed;
   const getSeed = async () => seed || (seed = await fetch('data/rescueReports.json').then((r) => r.json()).catch(() => []));
-  const reports = async () => [...(load().added || []), ...(await getSeed())].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  const reports = async () => {
+    const st = load().status || {};
+    return [...(load().added || []), ...(await getSeed())].map((r) => (st[r.ticketNumber] ? { ...r, status: st[r.ticketNumber] } : r))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+  };
   const count = (arr, f) => arr.reduce((m, x) => { const k = f(x); m[k] = (m[k] || 0) + 1; return m; }, {});
 
   function analytics(rs, adoptions) {
@@ -50,6 +54,11 @@ window.PawDemo = (() => {
     const s = load();
     if (method === 'GET' && path === '/rescue-reports') return reports();
     if (method === 'GET' && path === '/analytics') return analytics(await reports(), (s.adoptions || []).length + 1);
+    if (method === 'PUT' && path.startsWith('/rescue-reports/')) {
+      const t = decodeURIComponent(path.split('/').pop()), ok = ['Reported', 'Dispatched', 'In-Rescue', 'Recovered'];
+      if (!ok.includes(body.status)) throw new Error('Invalid status');
+      s.status = { ...(s.status || {}), [t]: body.status }; save(s); return { ticketNumber: t, status: body.status };
+    }
     if (method === 'POST' && path === '/rescue-reports') {
       const need = ['animalType', 'location', 'description', 'reporterName', 'reporterContact'];
       if (need.some((k) => !body[k])) throw new Error('Missing required fields for reporting');
