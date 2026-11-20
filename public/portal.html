@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PawGuard · Adopt, rescue, volunteer</title>
+<meta name="description" content="Sign in to PawGuard to adopt rescued animals, volunteer on rescue cases, or manage an animal welfare organisation.">
+<meta name="theme-color" content="#26412c">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐾%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body>
+<a class="skip" href="#view">Skip to content</a>
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="/" aria-label="PawGuard home"><span class="brand-mark">🐾</span><span>Paw<b>Guard</b></span></a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav">Menu</button>
+    <nav id="nav" aria-label="Main"></nav>
+    <div id="who" class="who"></div>
+  </div>
+</header>
+<div id="banner" role="status"></div>
+<main id="view" class="wrap" tabindex="-1" aria-live="polite"></main>
+<footer class="foot"><div class="wrap">PawGuard · Support <a href="mailto:officialdivyadeep@gmail.com">officialdivyadeep@gmail.com</a> · Animal helpline <a href="tel:1962">1962</a> · Emergency <a href="tel:112">112</a> · <a href="/">Main site</a></div></footer>
+<div id="dlgHost"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="portal.js"></script>
+</body>
+</html>

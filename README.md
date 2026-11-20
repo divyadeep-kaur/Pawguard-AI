@@ -51,3 +51,12 @@ backend/src/data/*.json                    seed data (runtime copies *_active.js
 `GET /api/rescue-reports` · `POST /api/rescue-reports` · `PUT /api/rescue-reports/:id` · `GET /api/analytics` · `POST /api/adoption/requests` · `POST /api/scan-animal` · `POST /api/chat` · `GET /api/health`
 
 *AI output is guidance only and not a substitute for a veterinarian. In India, the animal helpline is 1962 (availability varies by state).*
+
+
+## Accounts, roles & dashboards (Supabase)
+
+`/portal` is a role-based app: **Adopter** (marketplace, favourites, applications, centres), **Volunteer** (nearby rescue requests, accept/update cases, report) and **NGO admin** (animals, applications, rescues, centres, analytics).
+
+Authorisation is enforced in Postgres by Row Level Security (`supabase/schema.sql`), not just hidden buttons. Admin rights cannot be self-assigned; the project owner grants them in the SQL editor.
+
+Setup: create a Supabase project → run `supabase/schema.sql` (and optionally `supabase/seed_demo.sql`, which is labelled demo data) → put the Project URL and **anon** key in `public/config.js` → redeploy. Never commit the service_role key. Until configured, the portal says so instead of faking it.

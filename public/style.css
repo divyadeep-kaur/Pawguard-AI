@@ -409,3 +409,5 @@ h3{font-size:1.2rem}.res-top h3{font-size:1.5rem}.story-body h3{font-size:1.2rem
 .foot-contact b{font-size:1rem;letter-spacing:0}.contacts li b{font-size:1.15rem}
 
 .brand b{font-weight:700}
+
+.nav-cta{background:var(--primary);color:#fff!important;border-radius:8px;padding:6px 14px!important;font-weight:600}
