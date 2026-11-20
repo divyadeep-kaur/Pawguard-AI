@@ -106,3 +106,7 @@ dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:12px 0}dt{col
  .two{grid-template-columns:1fr}.row-card{flex-direction:column}.row-card>img{width:100%;height:180px}.noimg.sm{width:100%;height:120px}
  .who-name{display:none}
 }
+
+/* NGO admin requests (admin overview) */
+.req{display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line)}
+.req:last-of-type{border-bottom:0}.req .row{margin-top:0}
