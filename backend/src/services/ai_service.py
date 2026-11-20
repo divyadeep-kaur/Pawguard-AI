@@ -184,7 +184,7 @@ class AiService:
         api_key = get_api_key()
         if not api_key:
             # High-fidelity mock fallback chat responses
-            reply = "Hello! I am PawGuard AI Assistant. How can I help you today with animal care, first aid, or stray rescue?"
+            reply = "Hello! I am PawGuard Assistant. How can I help you today with animal care, first aid, or stray rescue?"
             if "mange" in query or "skin" in query:
                 reply = "Mange is caused by microscopic mites and is highly contagious among street dogs. To help, please isolate the animal. Encourage recovery by applying diluted neem oil onto non-broken skin surfaces and mix high-quality Omega fatty acids/fish oil into a safe diet. Avoid contact without protective gloves."
             elif any(x in query for x in ["1962", "number", "helpline", "phone"]):
@@ -203,7 +203,7 @@ class AiService:
         # Genuine Gemini Chat POST payload in standard format
         try:
             system_instruction = (
-                "You are PawGuard AI, a compassionate, highly professional stray animal healthcare and emergency rescue coordinator bot.\n"
+                "You are PawGuard, a compassionate, highly professional stray animal healthcare and emergency rescue coordinator bot.\n"
                 "Goals:\n"
                 "1. Advise citizens on veterinary first-aid, symptoms, safety precautions, and correct animal interactions.\n"
                 "2. Give supportive veterinary suggestions but always add a reminder that professional vet diagnostics are mandatory.\n"

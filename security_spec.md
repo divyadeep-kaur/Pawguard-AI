@@ -1,6 +1,6 @@
-# Security Specification: PawGuard AI
+# Security Specification: PawGuard
 
-This document establishes the security invariants, threat validation payloads, and automated test setup rules to ensure zero-trust security and prevent Update-Gaps, spoofing, or resource exhaustion across PawGuard AI's Firebase collections.
+This document establishes the security invariants, threat validation payloads, and automated test setup rules to ensure zero-trust security and prevent Update-Gaps, spoofing, or resource exhaustion across PawGuard's Firebase collections.
 
 ## 1. Data Invariants
 

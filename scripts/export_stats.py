@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PawGuard AI Live Analytics Sync & Telemetry Exporter
+PawGuard Live Analytics Sync & Telemetry Exporter
 Enables direct local statistics logging, CSV backup creation, 
 and real-time command-line analytical telemetry tracking.
 """
@@ -11,7 +11,7 @@ import csv
 import urllib.request
 from datetime import datetime
 
-# API endpoints of PawGuard AI
+# API endpoints of PawGuard
 API_URL_REPORTS = "http://localhost:3000/api/rescue-reports"
 API_URL_ANALYTICS = "http://localhost:3000/api/analytics"
 API_URL_HEALTH = "http://localhost:3000/api/health"
@@ -36,7 +36,7 @@ def check_server_status():
 def get_live_stats():
     """Fetch live data from the database endpoints and output analytical summaries."""
     print("\n" + "=" * 60)
-    print("      🐾 PAWGUARD AI - LOCAL DATABASE & STATS EXPORTER 🐾      ")
+    print("      🐾 PAWGUARD - LOCAL DATABASE & STATS EXPORTER 🐾      ")
     print("=" * 60)
     
     server_online = check_server_status()

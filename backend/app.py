@@ -236,7 +236,7 @@ class PawGuardHTTPHandler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     PORT = int(os.environ.get("PORT", "3000"))
-    print("================== PAWGUARD AI http.server INGESTION ==================")
+    print("================== PAWGUARD http.server INGESTION ==================")
     print("Database seeding verification initialization...")
     try:
         FirestoreService.seed_initial_database()

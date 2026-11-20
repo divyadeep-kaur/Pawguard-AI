@@ -1,4 +1,4 @@
-/* PawGuard AI front end. No build step; talks to the Python API in backend/. */
+/* PawGuard front end. No build step; talks to the Python API in backend/. */
 (() => {
   'use strict';
 

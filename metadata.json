@@ -1,5 +1,5 @@
 {
-  "name": "PawGuard AI",
+  "name": "PawGuard",
   "description": "AI-Powered Stray Animal Rescue, Disease Detection & Adoption Platform",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

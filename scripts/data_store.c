@@ -1,6 +1,6 @@
 /**
  * ==================================================================================
- *                       🐾 PAWGUARD AI - EMBEDDED TELEMETRY ENGINE 🐾
+ *                       🐾 PAWGUARD - EMBEDDED TELEMETRY ENGINE 🐾
  * ==================================================================================
  * File: data_store.c
  * Purpose: Local structural serialization, binary caching, and high-performance

@@ -1,4 +1,4 @@
-# 🐾 PawGuard AI
+# 🐾 PawGuard
 
 Help stray animals faster: scan a photo for AI first-aid guidance, file a geo-tagged rescue report, follow cases on a live map, and adopt rescued animals.
 
