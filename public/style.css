@@ -203,8 +203,8 @@ dialog::backdrop{background:rgba(10,20,22,.55)}
 .dlg-head{display:flex;justify-content:space-between;align-items:center}
 .dlg-head button{background:none;border:0;font-size:1.1rem;cursor:pointer;color:var(--ink)}
 
-.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:12px;z-index:100;transition:transform .3s;max-width:90vw;font-weight:500}
-.toast.show{transform:translate(-50%,0)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,120px);visibility:hidden;opacity:0;pointer-events:none;background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:12px;z-index:100;transition:transform .3s,opacity .3s,visibility .3s;max-width:90vw;font-weight:500}
+.toast.show{transform:translate(-50%,0);visibility:visible;opacity:1}
 .skeleton{height:56px;border-radius:12px;background:linear-gradient(90deg,var(--bg-alt),var(--line),var(--bg-alt));background-size:200% 100%;animation:sk 1.2s infinite}
 @keyframes sk{to{background-position:-200% 0}}
 
@@ -252,7 +252,8 @@ dialog::backdrop{background:rgba(10,20,22,.55)}
 [hidden]{display:none!important}
 .hero{overflow-x:clip}
 .split>*,.grid2>*,.form>*,.form label,.track input,.inline input{min-width:0}input,select,textarea{max-width:100%}
-.ph img.ov:not(.ok){visibility:hidden}
+.ph img.ov{transition:opacity .4s ease}
+.ph img.ov:not(.ok){visibility:hidden;opacity:0}
 .seg label{position:relative}.seg input{width:1px;height:1px}
 
 /* ===== Hero: glassmorphism over a swipeable, softly blurred photo slideshow ===== */

@@ -57,7 +57,7 @@
 
   // Local illustration is always shown; if a real photo exists at img/photos/<id>.jpg it is layered on top.
   const photo = (art, fallback, alt, id, pos) =>
-    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}<img src="${esc(art)}" alt="" loading="lazy">${id ? `<img class="ov" ${pos ? `style="object-position:${esc(pos)}"` : ''} src="img/photos/${esc(id)}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
+    `<div class="ph" role="img" aria-label="${esc(alt)}">${fallback}<img src="${esc(art)}" alt="" loading="lazy">${id ? `<img class="ov" ${pos ? `style="object-position:${esc(pos)}"` : ''} src="img/photos/${esc(id)}.jpg" alt="" decoding="async" onload="this.classList.add('ok')" onerror="this.remove()">` : ''}</div>`;
 
   // ---------- nav ----------
   const menuBtn = $('#menu-btn');
@@ -72,7 +72,11 @@
     const io = new IntersectionObserver((es) => es.forEach((en) => {
       if (en.isIntersecting) links.forEach((a) => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
     }), { rootMargin: '-45% 0px -50% 0px' });
-    links.forEach((a) => { const t = $(a.getAttribute('href')); if (t) io.observe(t); });
+    links.forEach((a) => {
+      const href = a.getAttribute('href') || '';
+      if (!/^#[\w-]+$/.test(href)) return; // skip external/page links such as /portal
+      const t = $(href); if (t) io.observe(t);
+    });
   }
 
   // ---------- state ----------
@@ -473,7 +477,7 @@
     { id: 'rocky', art: 'rocky', tag: '🐕 Dog', name: 'From severe skin disease to a happy dog', text: 'Untreated mange and infection can cover a dog in sores. With vet treatment, good food and patience, a full recovery is possible.' },
     { id: 'pup', art: 'rocky', tag: '🐕 Puppy', name: 'From hairless and weak to playful', text: 'Severe malnutrition and skin infection are treatable. Proper medical care and a loving home can change everything.', posB: '50% 12%', posA: '50% 25%' },
   ];
-  const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span><img src="img/story-${s.art}-${k}.svg" alt="" loading="lazy"><img class="ov" ${(k === 'before' ? s.posB : s.posA) ? `style="object-position:${k === 'before' ? s.posB : s.posA}"` : ''} src="img/photos/${s.id}-${k}.jpg" alt="" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
+  const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span><img src="img/story-${s.art}-${k}.svg" alt="" loading="lazy"><img class="ov" ${(k === 'before' ? s.posB : s.posA) ? `style="object-position:${k === 'before' ? s.posB : s.posA}"` : ''} src="img/photos/${s.id}-${k}.jpg" alt="" decoding="async" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
   $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba" role="img" aria-label="${esc(s.name)}, before and after">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
       <div class="story-body"><div class="tags"><span>${s.tag}</span></div><h3>${s.name}</h3><p>${s.text}</p></div></article>`).join('');
 
