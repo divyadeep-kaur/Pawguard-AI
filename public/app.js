@@ -472,14 +472,109 @@
 
   // ---------- stories ----------
   const STORIES = [
-    { id: 'kiku', art: 'kiku', tag: '🐈 Cat', name: 'Street rescue to a safe home', text: 'Tiny kittens found on the street need warmth, milk and a vet check. With fostering and adoption, they grow up safe and loved.' },
-    { id: 'nandi', art: 'nandi', tag: '🐄 Cattle', name: 'Roadside rescue to a safe sanctuary', text: 'Cattle left to scavenge among rubbish can be moved to sanctuaries where they graze freely, are fed properly and get veterinary care.' },
-    { id: 'rocky', art: 'rocky', tag: '🐕 Dog', name: 'From severe skin disease to a happy dog', text: 'Untreated mange and infection can cover a dog in sores. With vet treatment, good food and patience, a full recovery is possible.' },
-    { id: 'pup', art: 'rocky', tag: '🐕 Puppy', name: 'From hairless and weak to playful', text: 'Severe malnutrition and skin infection are treatable. Proper medical care and a loving home can change everything.', posB: '50% 12%', posA: '50% 25%' },
+    { id: 'kiku', art: 'kiku', tag: '🐈 Cat', name: 'Street rescue to a safe home', text: 'Tiny kittens found on the street need warmth, milk and a vet check. With fostering and adoption, they grow up safe and loved.',
+      lead: 'A few weeks old, cold and crying in a cardboard box at the roadside. Here is how a rescue like this usually unfolds, from the first warm towel to a forever home.',
+      facts: [['Animal', 'Kitten, a few weeks old'], ['Typical time to a home', '8 to 12 weeks'], ['Key needs', 'Warmth, milk replacer, vet check']],
+      timeline: [
+        ['Day 1', 'Found and kept warm', 'Someone hears tiny kittens crying near the road. Before anything else they are dried and kept warm with a towel and a wrapped warm-water bottle. A cold kitten cannot digest food, so warmth always comes before feeding.'],
+        ['Days 1 to 2', 'First feed and vet check', 'Kittens this young are fed a kitten milk replacer, never cow\'s milk, which upsets their stomachs. A vet checks for dehydration, fleas, worms and eye or nose infections.'],
+        ['Weeks 2 to 6', 'Foster care', 'In a quiet foster home the kittens are fed on a schedule, kept clean and slowly weaned onto soft food. Gentle daily handling helps them grow up trusting people.'],
+        ['Weeks 8 to 12', 'Vaccines and adoption', 'Once they are eating well and have had their first vaccinations and deworming, the kittens are ready for homes. Sterilisation is arranged when the vet says they are old enough.'],
+      ],
+      worked: ['Warmth first, then food', 'A vet check within a day or two', 'Patient fostering until they were strong and sociable'],
+      help: ['If you find kittens, watch from a distance first. A mother cat is often nearby and may return.', 'If they are clearly alone for hours or hurt, keep them warm and call a vet or rescue group.', 'Foster, adopt, or sterilise community cats to prevent more street litters.'] },
+    { id: 'nandi', art: 'nandi', tag: '🐄 Cattle', name: 'Roadside rescue to a safe sanctuary', text: 'Cattle left to scavenge among rubbish can be moved to sanctuaries where they graze freely, are fed properly and get veterinary care.',
+      lead: 'A thin cow left to scavenge among rubble and rubbish beside the road. Here is the usual path from the street to a sanctuary where she can graze in peace.',
+      facts: [['Animal', 'Cow'], ['Typical recovery', 'Several weeks to a few months'], ['Key needs', 'Safe handling, vet care, proper fodder']],
+      timeline: [
+        ['Day 1', 'Reported and assessed', 'A passer-by reports a weak cow living on a rubbish heap. Rescuers watch from a safe distance for wounds, a swollen belly, drooling or limping, which can point to plastic ingestion or injury.'],
+        ['Days 1 to 2', 'Moved safely', 'Frightened cattle can kick or charge, so trained handlers or a local welfare group move her in a suitable vehicle with a ramp. The public should not try to herd or tie a cow themselves.'],
+        ['Week 1', 'Veterinary care', 'A vet examines her, treats wounds and parasites and plans her feeding. If plastic is suspected she needs a vet\'s care, because food alone will not fix it.'],
+        ['Weeks 2 to 8', 'Life at the sanctuary', 'She is ear-tagged so her health can be tracked, given routine vaccinations and deworming, and slowly regains weight on green fodder and clean water.'],
+        ['Month 3 onwards', 'Grazing freely', 'Stronger and out of the traffic, she grazes with a herd in open pasture with shade and water.'],
+      ],
+      worked: ['Trained handlers instead of an improvised rescue', 'Veterinary treatment before refeeding', 'A permanent home with pasture, shade and clean water'],
+      help: ['Keep plastic and food waste in bins so cattle cannot eat it.', 'Never feed cattle leftovers in plastic bags.', 'Report injured or abandoned cattle to the 1962 helpline, a local gaushala or an animal welfare group.'] },
+    { id: 'rocky', art: 'rocky', tag: '🐕 Dog', name: 'From severe skin disease to a happy dog', text: 'Untreated mange and infection can cover a dog in sores. With vet treatment, good food and patience, a full recovery is possible.',
+      lead: 'A young dog with sores, crusting and hair loss across his face and body. Severe skin disease like this is painful, but it is treatable.',
+      facts: [['Animal', 'Young dog'], ['Typical recovery', '6 to 12 weeks, sometimes longer'], ['Key needs', 'Vet diagnosis, medicated treatment, nutrition']],
+      timeline: [
+        ['Day 1', 'Rescued and kept apart', 'He is lifted gently using gloves and a blanket. Some kinds of mange spread to other animals and can make people itch too, so he is kept away from other pets until a vet says it is safe.'],
+        ['Days 1 to 3', 'Diagnosis', 'A vet takes a skin scrape to find the cause, such as mites, bacteria or fungus, because each needs different treatment. Oils and home remedies can make the skin worse.'],
+        ['Weeks 1 to 6', 'Treatment', 'Medicated baths, vet-prescribed medicines for the mites and any infection, and pain relief if needed. Good food and clean bedding help the skin heal.'],
+        ['Weeks 6 to 12', 'Fur grows back', 'Crusts fall away, the skin calms and fur starts to return. Follow-up visits make sure the problem does not come back.'],
+        ['Month 3 onwards', 'Ready for a home', 'Once the vet has cleared him he is vaccinated, sterilised and ready to be someone\'s playful companion.'],
+      ],
+      worked: ['A proper diagnosis instead of guesswork', 'Patience, because skin heals slowly', 'A full course of treatment with follow-up checks'],
+      help: ['Wear gloves around sores and wash your hands afterwards.', 'Do not apply engine oil, kitchen remedies or human creams. Let a vet diagnose it.', 'Report him with a photo and location so rescuers can reach him.'] },
+    { id: 'pup', art: 'rocky', tag: '🐕 Puppy', name: 'From hairless and weak to playful', text: 'Severe malnutrition and skin infection are treatable. Proper medical care and a loving home can change everything.', posB: '50% 12%', posA: '50% 25%',
+      lead: 'A puppy with almost no fur, thin and weak from malnutrition and a severe skin infection. Even this can be reversed with the right care.',
+      facts: [['Animal', 'Puppy'], ['Typical recovery', '2 to 4 months'], ['Key needs', 'Gradual refeeding, skin treatment, warmth']],
+      timeline: [
+        ['Day 1', 'Kept safe and warm', 'Weak puppies lose body heat quickly, so he is wrapped up and kept somewhere quiet and warm on the way to a vet.'],
+        ['Days 1 to 3', 'Stabilised', 'A vet checks hydration, gut parasites and skin. A starving animal must be refed slowly in small, frequent meals under vet guidance, because too much food too fast can be dangerous.'],
+        ['Weeks 1 to 4', 'Skin and strength', 'The skin infection and parasites are treated while he gains weight on a vet-recommended diet. Rest, clean bedding and gentle handling matter as much as medicine.'],
+        ['Weeks 4 to 8', 'Fur and play', 'Fur grows back, energy returns and he starts to play. Vaccinations begin once the vet confirms he is strong enough.'],
+        ['Month 3 onwards', 'Adopted', 'Healthy, vaccinated and confident, he is ready for a loving home.'],
+      ],
+      worked: ['Slow, vet-guided refeeding', 'Treating the skin disease and parasites together', 'A foster home that gave him time to recover'],
+      help: ['Offer small sips of water to a very thin animal and get vet advice before giving food.', 'Wrap a weak puppy in a towel, keep it warm and get to a vet quickly.', 'Foster or adopt. Healthy rescues are listed in our Adopt section.'] },
   ];
   const half = (s, k, lab) => `<div class="ph"><span class="lab">${lab}</span><img src="img/story-${s.art}-${k}.svg" alt="" loading="lazy"><img class="ov" ${(k === 'before' ? s.posB : s.posA) ? `style="object-position:${k === 'before' ? s.posB : s.posA}"` : ''} src="img/photos/${s.id}-${k}.jpg" alt="" decoding="async" onload="this.classList.add('ok')" onerror="this.remove()"></div>`;
-  $('#stories').innerHTML = STORIES.map((s) => `<article class="card story"><div class="ba" role="img" aria-label="${esc(s.name)}, before and after">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
-      <div class="story-body"><div class="tags"><span>${s.tag}</span></div><h3>${s.name}</h3><p>${s.text}</p></div></article>`).join('');
+  $('#stories').innerHTML = STORIES.map((s, i) => `<article class="card story" data-story="${i}" tabindex="0" role="button" aria-label="Read the full story: ${esc(s.name)}"><div class="ba" aria-hidden="true">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
+      <div class="story-body"><div class="tags"><span>${s.tag}</span></div><h3>${s.name}</h3><p>${s.text}</p><span class="story-more">Read the full story <span aria-hidden="true">→</span></span></div></article>`).join('');
+
+  // ---------- story detail (full-screen view) ----------
+  const storyDlg = $('#story-dialog'), storyBody = $('#story-body');
+  const storyHtml = (s, i) => `
+    <div class="sd-top"><span class="sd-tag">${esc(s.tag)}</span><span class="sd-count">Story ${i + 1} of ${STORIES.length}</span></div>
+    <h2 id="story-title">${esc(s.name)}</h2>
+    <p class="sd-lead">${esc(s.lead)}</p>
+    <div class="ba sd-ba" role="img" aria-label="${esc(s.name)}, before and after">${half(s, 'before', 'Before')}${half(s, 'after', 'After')}</div>
+    <dl class="sd-facts">${s.facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+    <h3 class="sd-h">How it unfolded</h3>
+    <ol class="sd-time">${s.timeline.map(([when, title, text]) => `<li><span class="when">${esc(when)}</span><div><h4>${esc(title)}</h4><p>${esc(text)}</p></div></li>`).join('')}</ol>
+    <div class="sd-cols">
+      <section><h3 class="sd-h">What made the difference</h3><ul>${s.worked.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></section>
+      <section><h3 class="sd-h">How you can help</h3><ul>${s.help.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></section>
+    </div>
+    <div class="sd-cta">
+      <a class="btn btn-primary" href="#report" data-go>Report an animal</a>
+      <a class="btn btn-ghost" href="#adopt" data-go>Meet adoptable pets</a>
+      <a class="btn btn-ghost" href="#scan" data-go>Scan an animal</a>
+    </div>
+    <p class="sd-note">Illustrative example: the timeline shows typical care, not the exact case history of the animals in the photos. Always follow a vet's advice.</p>
+    <nav class="sd-nav" aria-label="More stories">
+      <button class="btn btn-ghost btn-sm" data-story-nav="-1">← ${esc(STORIES[(i + STORIES.length - 1) % STORIES.length].name)}</button>
+      <button class="btn btn-ghost btn-sm" data-story-nav="1">${esc(STORIES[(i + 1) % STORIES.length].name)} →</button>
+    </nav>`;
+  let storyIdx = 0;
+  function openStory(i) {
+    storyIdx = (i + STORIES.length) % STORIES.length;
+    storyBody.innerHTML = storyHtml(STORIES[storyIdx], storyIdx);
+    if (!storyDlg.open) { storyDlg.showModal(); document.body.classList.add('lock'); }
+    storyDlg.scrollTop = 0;
+    try { window.history.replaceState(null, '', '#story-' + STORIES[storyIdx].id); } catch {}
+  }
+  $('#stories').addEventListener('click', (e) => {
+    const c = e.target.closest('[data-story]'); if (c) openStory(+c.dataset.story);
+  });
+  $('#stories').addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[data-story]')) { e.preventDefault(); openStory(+e.target.dataset.story); }
+  });
+  storyBody.addEventListener('click', (e) => {
+    const n = e.target.closest('[data-story-nav]');
+    if (n) { openStory(storyIdx + +n.dataset.storyNav); return; }
+    const g = e.target.closest('[data-go]');
+    if (g) { e.preventDefault(); const href = g.getAttribute('href'); storyDlg.close(); const t = $(href); if (t) t.scrollIntoView({ behavior: 'smooth' }); }
+  });
+  $('#story-close').addEventListener('click', () => storyDlg.close());
+  storyDlg.addEventListener('click', (e) => { if (e.target === storyDlg) storyDlg.close(); });
+  storyDlg.addEventListener('close', () => {
+    document.body.classList.remove('lock');
+    try { window.history.replaceState(null, '', location.pathname + location.search); } catch {}
+  });
+  { const m = /^#story-(\w+)$/.exec(location.hash); const k = m ? STORIES.findIndex((s) => s.id === m[1]) : -1; if (k >= 0) openStory(k); }
 
   // ---------- chat ----------
   const chat = $('#chat'), log = $('#chat-log'), history = [];
