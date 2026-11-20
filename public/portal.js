@@ -3,7 +3,8 @@
    the role checks here only decide what to *show*. */
 (() => {
 const cfg = window.PAWGUARD_CONFIG || {};
-const configured = !!(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase);
+const hasCfg = !!(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY);
+const configured = !!(hasCfg && window.supabase);
 const sb = configured ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -27,6 +28,8 @@ function friendly(err) {
   if (err?.code === '23505') return 'You already have an open application for this animal.';
   if (err?.code === '42501' || /row-level security|Not allowed|only|Admins|Volunteers/i.test(m)) return 'You do not have permission to do that.';
   if (/Invalid login/i.test(m)) return 'Email or password is incorrect.';
+  if (/Email not confirmed/i.test(m)) return 'Please confirm your email first: check your inbox for the confirmation link, then sign in.';
+  if (/rate limit|too many/i.test(m)) return 'Too many attempts. Please wait a minute and try again.';
   if (/already registered/i.test(m)) return 'That email is already registered — try signing in.';
   if (/Failed to fetch|NetworkError/i.test(m)) return 'Network problem — check your connection and try again.';
   return m;
@@ -53,10 +56,25 @@ function renderShell() {
 /* ---------- boot ---------- */
 async function boot() {
   $('#menuBtn').onclick = e => { const n = $('#nav'); const o = n.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', o); };
-  if (!configured) return renderUnconfigured();
+  if (!configured) return renderUnconfigured(hasCfg && !window.supabase ? 'lib' : 'missing');
+  view.innerHTML = loadingHtml();
+  const bad = await checkBackend();
+  if (bad) return renderUnconfigured(bad);
   const { data } = await sb.auth.getSession();
   await setSession(data.session);
-  sb.auth.onAuthStateChange(async (ev, s) => { if (ev === 'SIGNED_IN' || ev === 'SIGNED_OUT' || ev === 'TOKEN_REFRESHED') { if ((s?.user?.id) !== (S.session?.user?.id)) { await setSession(s); route(); } } });
+  sb.auth.onAuthStateChange((ev, s) => {
+    // Never await Supabase calls directly inside this callback: supabase-js holds its auth lock while it runs and
+    // that deadlocks. Defer the work to the next tick instead.
+    setTimeout(async () => {
+      if (ev === 'PASSWORD_RECOVERY') { await setSession(s); renderShell(); recoveryDialog(); return; }
+      if (ev === 'SIGNED_IN' || ev === 'SIGNED_OUT' || ev === 'TOKEN_REFRESHED') {
+        if ((s?.user?.id) !== (S.session?.user?.id)) {
+          await setSession(s); route();
+          if (ev === 'SIGNED_IN' && S.profile) toast('Signed in as ' + (S.profile.full_name || s.user.email) + '.');
+        }
+      }
+    }, 0);
+  });
   window.addEventListener('hashchange', route);
   route();
   subscribeRealtime();
@@ -71,14 +89,53 @@ async function setSession(s) {
     } catch (e) { toast(friendly(e), true); }
   }
 }
-function renderUnconfigured() {
+/* Distinguishes *why* the backend is unusable instead of showing one generic message.
+   Nothing is faked: until every check passes the portal stays out of the way. */
+async function checkBackend() {
+  try {
+    const { error } = await sb.from('centres').select('id').limit(1);
+    if (!error) return null;
+    const m = `${error.code || ''} ${error.message || ''}`;
+    if (/PGRST205|42P01|schema cache|does not exist/i.test(m)) return 'schema';
+    if (/invalid api key|apikey|jwt|PGRST30/i.test(m)) return 'key';
+    if (/fetch|network|load failed/i.test(m)) return 'network';
+    return 'other:' + (error.message || 'unknown error');
+  } catch (e) { return /fetch|network|load failed/i.test(e.message || '') ? 'network' : 'other:' + (e.message || 'unknown error'); }
+}
+function renderUnconfigured(kind = 'missing') {
   renderShell();
-  view.innerHTML = `<section class="panel setup"><h1>Accounts backend not connected</h1>
-  <p>Sign-in, adoption applications, volunteer dashboards and the NGO admin area need a database. This deployment has no Supabase project configured yet, so nothing here is saved or pretended to work.</p>
-  <ol><li>Create a free project at <a href="https://supabase.com" rel="noopener">supabase.com</a>.</li>
-  <li>Open <b>SQL Editor</b> and run <code>supabase/schema.sql</code> from the repository (optionally <code>supabase/seed_demo.sql</code> for clearly-labelled demo data).</li>
-  <li>Copy <b>Project URL</b> and the <b>anon public key</b> into <code>public/config.js</code> and redeploy. Never use the service_role key.</li></ol>
-  <p><a class="btn" href="/">Back to main site</a></p></section>`;
+  const back = '<p class="row"><button class="btn" data-act="reload">Check again</button><a class="btn ghost" href="/">Back to main site</a></p>';
+  const P = {
+    missing: ['Accounts backend not connected',
+      'Sign-in, adoption applications, volunteer dashboards and the NGO admin area need a database. This deployment has no Supabase project configured yet, so nothing here is saved or pretended to work.',
+      `<li>Create a free project at <a href="https://supabase.com" rel="noopener">supabase.com</a>.</li>
+      <li>Open <b>SQL Editor</b> and run <code>supabase/schema.sql</code> from the repository (optionally <code>supabase/seed_demo.sql</code> for clearly-labelled demo data).</li>
+      <li>In Vercel add the environment variables <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> (the <b>anon / publishable</b> key, never service_role), then redeploy.</li>`],
+    lib: ['Supabase client library could not load',
+      'The configuration is present, but the Supabase JavaScript library from the CDN did not load. An ad blocker, a network filter or being offline can cause this.',
+      '<li>Disable content blockers for this site and reload.</li><li>Check your connection.</li>'],
+    schema: ['Database tables are not installed',
+      'The Supabase project is reachable and the key was accepted, but the PawGuard tables do not exist in it yet.',
+      '<li>Open your Supabase project, then <b>SQL Editor</b>.</li><li>Paste and run <code>supabase/schema.sql</code> (or the files in <code>supabase/migrations/</code> in order).</li><li>Reload this page.</li>'],
+    key: ['Supabase rejected the API key',
+      'The project URL answered, but the key in this deployment was refused. It may be mistyped, from a different project, or revoked.',
+      '<li>In Supabase open <b>Project Settings → API</b> and copy the <b>Project URL</b> and the <b>anon / publishable</b> key.</li><li>Update <code>SUPABASE_URL</code> and <code>SUPABASE_ANON_KEY</code> in Vercel and redeploy.</li>'],
+    network: ['Cannot reach the Supabase project',
+      'The browser could not connect to the configured Supabase URL. The URL may be wrong, the project may be paused (free projects pause after a period of inactivity), or you may be offline.',
+      '<li>Open the Supabase dashboard and restore the project if it is paused.</li><li>Check that <code>SUPABASE_URL</code> in Vercel looks like <code>https://&lt;project-ref&gt;.supabase.co</code>.</li>']
+  };
+  const [title, lead, steps] = kind.startsWith('other:')
+    ? ['Backend error', 'Supabase returned an unexpected error: ' + kind.slice(6), '<li>Check the project status in the Supabase dashboard.</li><li>Confirm <code>supabase/schema.sql</code> was applied without errors.</li>']
+    : P[kind] || P.missing;
+  view.innerHTML = `<section class="panel setup"><h1>${esc(title)}</h1><p>${esc(lead)}</p><ol>${steps}</ol>${back}</section>`;
+}
+function recoveryDialog() {
+  dialog(`<h2>Set a new password</h2><form id="fPw" novalidate><label>New password <small>(at least 8 characters)</small><input type="password" name="pw" minlength="8" autocomplete="new-password" required></label><p class="err-msg" role="alert"></p><div class="row"><button class="btn">Update password</button></div></form>`, 'New password');
+  $('#fPw').onsubmit = async e => {
+    e.preventDefault(); const f = e.target, m = $('.err-msg', f); m.textContent = '';
+    if (f.pw.value.length < 8) { m.textContent = 'Password must be at least 8 characters.'; return; }
+    await withBusy(f, async () => { const { error } = await sb.auth.updateUser({ password: f.pw.value }); if (error) { m.textContent = friendly(error); return; } closeDialog(); toast('Password updated.'); });
+  };
 }
 
 /* ---------- router ---------- */
@@ -95,6 +152,10 @@ async function route() {
   if (!h) { location.hash = '#/' + home(); return; }
   renderShell();
   view.innerHTML = loadingHtml();
+  if (S.session && !S.profile) {
+    view.innerHTML = `<div class="empty err"><h2>We couldn't load your profile</h2><p>Your sign-in worked, but your profile record could not be read. This usually means the database setup (supabase/schema.sql) was not fully applied, or the connection dropped.</p><div class="row"><button class="btn" data-act="reload-profile">Try again</button><button class="btn ghost" data-act="signout">Sign out</button></div></div>`;
+    return;
+  }
   const fn = ROUTES[h];
   document.title = 'PawGuard · ' + (h.split('/').pop().replace(/^./, c => c.toUpperCase()));
   try { fn ? await fn() : view.innerHTML = emptyHtml('Page not found', 'That page does not exist.', '<a class="btn" href="#/">Go home</a>'); }
@@ -129,6 +190,7 @@ function authView() {
       <fieldset class="roles"><legend>I want to</legend>
         <label class="rc"><input type="radio" name="role" value="adopter" checked><span><b>Adopt an animal</b><small>Browse, save and apply to adopt</small></span></label>
         <label class="rc"><input type="radio" name="role" value="volunteer"><span><b>Rescue / volunteer</b><small>Help on rescue cases near me</small></span></label>
+        <label class="rc"><input type="radio" name="role" value="ngo"><span><b>NGO / organisation admin</b><small>Manage animals, applications and centres. Needs approval</small></span></label>
       </fieldset>
       <label>Full name<input name="full_name" autocomplete="name" required maxlength="120"></label>
       <label>Email<input type="email" name="email" autocomplete="email" required></label>
@@ -136,7 +198,7 @@ function authView() {
       <label>Password <small>(at least 8 characters)</small><input type="password" name="password" autocomplete="new-password" minlength="8" required></label>
       <p class="err-msg" role="alert"></p>
       <button class="btn block">Create account</button>
-      <p class="fine">NGO / organisation administrator accounts are verified and enabled by the PawGuard owner — they cannot be self-created.</p>
+      <p class="fine">Organisation admin access is never automatic: an existing administrator reviews each request, and the very first administrator is enabled by the project owner in the database.</p>
     </form>
   </section>
   <aside class="auth-side"><h1>Every animal deserves a home and a helping hand.</h1>
@@ -159,7 +221,11 @@ function authView() {
     await withBusy(f, async () => {
       const { data, error } = await sb.auth.signUp({ email: f.email.value.trim(), password: f.password.value, options: { emailRedirectTo: location.origin + '/portal', data: { full_name: f.full_name.value.trim(), phone: f.phone.value.trim(), city: f.city.value.trim(), role: f.role.value } } });
       if (error) { m.textContent = friendly(error); return; }
-      if (!data.session) { f.reset(); m.className = 'ok-msg'; m.textContent = 'Account created. Check your email to confirm your address, then sign in.'; }
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) { m.className = 'err-msg'; m.textContent = 'That email is already registered. Try signing in instead.'; return; }
+      const ngo = f.role.value === 'ngo';
+      const note = ngo ? ' Organisation admin access has to be approved by a PawGuard administrator; until then you can use your account as an adopter.' : '';
+      if (!data.session) { f.reset(); m.className = 'ok-msg'; m.textContent = 'Account created. Check your email to confirm your address, then sign in.' + note; }
+      else toast('Account created. Welcome to PawGuard!' + note);
     });
   };
 }
@@ -316,7 +382,7 @@ async function profileView() {
   view.innerHTML = `<div class="head"><h1>Your profile</h1></div><section class="panel narrow"><form id="fP" novalidate>
   <label>Email<input value="${esc(S.session.user.email)}" disabled></label><label>Full name<input name="full_name" value="${esc(p.full_name)}" maxlength="120" required></label>
   <div class="two"><label>Phone<input name="phone" value="${esc(p.phone || '')}" maxlength="30"></label><label>City<input name="city" value="${esc(p.city || '')}" maxlength="80"></label></div>
-  <p>Account type: <span class="chip role-${p.role}">${cap(p.role === 'admin' ? 'NGO admin' : p.role)}</span></p><p class="err-msg" role="alert"></p><button class="btn">Save changes</button></form></section>`;
+  <p>Account type: <span class="chip role-${p.role}">${cap(p.role === 'admin' ? 'NGO admin' : p.role)}</span></p>${p.admin_requested ? '<p class="sub">NGO admin access requested. Waiting for approval by an administrator.</p>' : ''}<p class="err-msg" role="alert"></p><button class="btn">Save changes</button></form></section>`;
   $('#fP').onsubmit = async e => {
     e.preventDefault(); const f = e.target, m = $('.err-msg', f);
     if (f.full_name.value.trim().length < 2) { m.textContent = 'Name is required.'; return; }
@@ -396,12 +462,12 @@ async function progressDialog(id) {
 
 /* ---------- admin ---------- */
 async function adminOverview() {
-  const s = await q(sb.rpc('admin_stats'));
+  const [s, reqs] = await Promise.all([q(sb.rpc('admin_stats')), q(sb.rpc('list_admin_requests'))]);
   const bars = Object.entries(s.by_status || {}); const max = Math.max(1, ...bars.map(b => b[1]));
   const kpi = (n, l) => `<div class="kpi"><b>${n}</b><span>${l}</span></div>`;
   view.innerHTML = `<div class="head"><h1>Organisation overview</h1></div><div class="kpis">${kpi(s.animals_total, 'Animals registered')}${kpi(s.animals_available, 'Available for adoption')}${kpi(s.animals_adopted, 'Adopted')}${kpi(s.applications_open, 'Applications to review')}${kpi(s.rescues_open, 'Open rescue cases')}${kpi(s.rescues_done, 'Rescues completed')}${kpi(s.volunteers, 'Volunteers')}${kpi(s.adopters, 'Adopters')}</div>
   <section class="panel"><h2>Rescue cases by status</h2>${bars.length ? bars.map(([k, v]) => `<div class="bar"><span>${cap(k)}</span><div><i style="width:${(v / max) * 100}%"></i></div><b>${v}</b></div>`).join('') : '<p class="sub">No rescue cases yet.</p>'}</section>
-  <section class="panel"><h2>Adding another organisation admin</h2><p class="sub">For safety, admin rights can only be granted in the database by the project owner: after the person signs up, run <code>update public.profiles set role='admin' where id=(select id from auth.users where email='…');</code> in the Supabase SQL editor.</p></section>`;
+  <section class="panel"><h2>NGO admin requests</h2>${reqs.length ? reqs.map(r => `<div class="req"><div><b>${esc(r.full_name || 'Unnamed')}</b><br><small>${esc(r.email)}${r.phone ? ' · ' + esc(r.phone) : ''}${r.city ? ' · ' + esc(r.city) : ''} · requested ${when(r.created_at)}</small></div><div class="row"><button class="btn sm" data-act="adminReq" data-id="${r.id}" data-approve="1">Approve</button><button class="btn ghost sm" data-act="adminReq" data-id="${r.id}" data-approve="0">Decline</button></div></div>`).join('') : '<p class="sub">No pending requests.</p>'}<p class="sub">Only approve people you have confirmed represent a genuine welfare organisation. Admins can edit animals, centres, applications and rescue cases.</p></section>`;
 }
 async function adminAnimals() {
   await loadCentres();
@@ -488,7 +554,10 @@ document.addEventListener('click', async e => {
   try {
     if (act === 'close') closeDialog();
     else if (act === 'retry') refresh();
-    else if (act === 'signout') { await sb.auth.signOut(); location.hash = '#/browse'; }
+    else if (act === 'signout') { await sb.auth.signOut(); location.hash = '#/browse'; toast('Signed out.'); }
+    else if (act === 'reload') location.reload();
+    else if (act === 'reload-profile') { await setSession(S.session); route(); }
+    else if (act === 'adminReq') { const ok = b.dataset.approve === '1'; if (confirm(ok ? 'Give this person full NGO admin access?' : 'Decline this request?')) { await q(sb.rpc('resolve_admin_request', { p_id: id, p_approve: ok })); toast(ok ? 'Admin access granted.' : 'Request declined.'); refresh(); } }
     else if (act === 'fav') toggleFav(id);
     else if (act === 'detail') await openDetail(id);
     else if (act === 'apply') await applyForm(id);
